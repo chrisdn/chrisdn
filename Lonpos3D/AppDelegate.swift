@@ -13,18 +13,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         DispatchQueue.global(qos: .background).async {
             var game = Game()
-            let str = "WWFFFBWWSFBBWSFBBYSSYYYYS"
-            for i in 0...24 {
-                game.space[i] = str[str.index(str.startIndex, offsetBy: i)]
+            var usePieces = Set<Character>()
+            let str = "UU  SU   SU  SSU  S" // initial board
+            for i in 0..<str.count {
+                let char = str[str.index(str.startIndex, offsetBy: i)]
+                game.space[i] = char
+                usePieces.insert(char)
             }
+            usePieces.remove(" ")
             for i in 0..<game.pieceCandidates.count {
-                switch game.pieceCandidates[i].identifier {
-                case "B", "F", "Y", "S", "W":
+                let id = game.pieceCandidates[i].identifier
+                if usePieces.contains(id) {
                     game.usePieceIndexes.insert(i)
-                default:
-                    break
                 }
             }
+            game.checkError()
             
             game.fillNextSpace()
             print("weiwei done")
@@ -183,6 +186,62 @@ struct Game {
     let pieceCandidates: [Piece] = [Piece.H, Piece.L, Piece.U, Piece.F, Piece.S, Piece.C, Piece.W, Piece.X, Piece.B, Piece.Z, Piece.O, Piece.Y]
     var usePieceIndexes = IndexSet()
     
+    private var mostDifficultPosition: PointInt3D? {
+        func neighbors(pos: PointInt3D) -> Int {
+            var score = 0
+            var p = PointInt3D(x: 0, y: 0, z: 0)
+            //4 neighbors in lower level
+            p.z = pos.z - 1
+            for x in pos.x...pos.x + 1 {
+                p.x = x
+                for y in pos.y...pos.y + 1 {
+                    p.y = y
+                    let index = p.index
+                    if 0...54 ~= p.index {
+                        score += space[index] == " " ? 0 : 1
+                    } else {
+                        score += 1
+                    }
+                }
+            }
+            //4 heighbors in upper level
+            p.z = pos.z + 1
+            for x in pos.x - 1...pos.x {
+                p.x = x
+                for y in pos.y - 1...pos.y {
+                    p.y = y
+                    let index = p.index
+                    if 0...54 ~= p.index {
+                        score += space[index] == " " ? 0 : 1
+                    } else {
+                        score += 1
+                    }
+                }
+            }
+            
+            return score
+        }
+        
+        var maxDifficultLevel = 0
+        var savePos: PointInt3D?
+        var lp = savePos
+        repeat {
+            if let np = nextEmptyPosition(from: lp) {
+                if space[np.index] == " " {
+                    let level = neighbors(pos: np)
+                    if level > maxDifficultLevel {
+                        maxDifficultLevel = level
+                        savePos = np
+                    }
+                }
+                lp = np
+            } else {
+                break
+            }
+        } while true
+        return savePos
+    }
+    
     private func nextEmptyPosition(from lastPoint: PointInt3D? = nil) -> PointInt3D? {
         if let lp = lastPoint, lp.index >= 54 {return nil}
         
@@ -329,7 +388,7 @@ struct Game {
         print(numberSum)
     }
     
-    private func checkError() {
+    func checkError() {
         var map = [Character: Int]()
         for i in 0...54 {
             let char = space[i]
