@@ -54,7 +54,7 @@ struct PointInt3D {
     var x, y, z: Int
     static let sqrt2_2 = sqrtf(2) / 2
     
-    var index: Int {
+    func index(outOfBoundAllowed: Bool = false) -> Int {
         switch z {
         case 0:
             return y * 5 + x
@@ -67,6 +67,7 @@ struct PointInt3D {
         case 4:
             return 54
         default:
+            if outOfBoundAllowed {return -1}
             abort()
         }
     }
@@ -196,8 +197,8 @@ struct Game {
                 p.x = x
                 for y in pos.y...pos.y + 1 {
                     p.y = y
-                    let index = p.index
-                    if 0...54 ~= p.index {
+                    let index = p.index(outOfBoundAllowed: true)
+                    if 0...54 ~= index {
                         score += space[index] == " " ? 0 : 1
                     } else {
                         score += 1
@@ -210,8 +211,8 @@ struct Game {
                 p.x = x
                 for y in pos.y - 1...pos.y {
                     p.y = y
-                    let index = p.index
-                    if 0...54 ~= p.index {
+                    let index = p.index(outOfBoundAllowed: true)
+                    if 0...54 ~= index {
                         score += space[index] == " " ? 0 : 1
                     } else {
                         score += 1
@@ -227,7 +228,7 @@ struct Game {
         var lp = savePos
         repeat {
             if let np = nextEmptyPosition(from: lp) {
-                if space[np.index] == " " {
+                if space[np.index()] == " " {
                     let level = neighbors(pos: np)
                     if level > maxDifficultLevel {
                         maxDifficultLevel = level
@@ -243,9 +244,9 @@ struct Game {
     }
     
     private func nextEmptyPosition(from lastPoint: PointInt3D? = nil) -> PointInt3D? {
-        if let lp = lastPoint, lp.index >= 54 {return nil}
+        if let lp = lastPoint, lp.index() >= 54 {return nil}
         
-        for i in ((lastPoint == nil ? 0 : lastPoint!.index) + 1)...54 where space[i] == " " {
+        for i in ((lastPoint?.index() ?? 0) + 1)...54 where space[i] == " " {
             return PointInt3D.point(from: i);
         }
         return nil
@@ -279,14 +280,14 @@ struct Game {
     mutating func fillNextSpace() {
         func getNextPointList(points: inout [PointInt3D], piece: Piece) -> Bool {
             var lp = points.removeLast()
-            space[lp.index] = " "
+            space[lp.index()] = " "
             repeat {
                 guard let np = nextEmptyPosition(from: lp) else {
                     if points.count < 2 {
                         return false
                     }
                     lp = points.removeLast()
-                    space[lp.index] = " "
+                    space[lp.index()] = " "
                     continue
                 }
                 lp = np
@@ -302,7 +303,7 @@ struct Game {
                 }
                 
                 points.append(np)
-                space[np.index] = piece.identifier
+                space[np.index()] = piece.identifier
             } while points.count < piece.ballCount
             
             return true
@@ -311,14 +312,14 @@ struct Game {
         guard let firstPos = nextEmptyPosition() else {return}
         for i in 0..<pieceCandidates.count where !usePieceIndexes.contains(i) {
             let piece = pieceCandidates[i]
-            space[firstPos.index] = piece.identifier
+            space[firstPos.index()] = piece.identifier
             var pointList = [firstPos]
             while (true) {
                 
                 while pointList.count < piece.ballCount {
                     guard let p = nextEmptyPosition(from: pointList.last) else {break}
                     pointList.append(p)
-                    space[p.index] = piece.identifier
+                    space[p.index()] = piece.identifier
                 }
                 if pointList.count < piece.ballCount {
                     if getNextPointList(points: &pointList, piece: piece) {continue}
@@ -367,7 +368,7 @@ struct Game {
                 break
             }
             
-            space[pointList[0].index] = " "
+            space[pointList[0].index()] = " "
         }
     }
     
@@ -377,7 +378,7 @@ struct Game {
             for y in 0...4 - z {
                 if stringList[y].isEmpty {stringList[y] = "\(y)) "}
                 for x in 0...4 - z {
-                    stringList[y] += String(space[PointInt3D(x: x, y: y, z: z).index])
+                    stringList[y] += String(space[PointInt3D(x: x, y: y, z: z).index()])
                 }
                 stringList[y] += "  "
             }
