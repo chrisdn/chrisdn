@@ -13,8 +13,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         DispatchQueue.global(qos: .background).async {
             var game = Game()
+            let str = "WWFFFBWWSFBBWSFBBYSSYYYYS"
             for i in 0...24 {
-                game.space[i] = "8"
+                game.space[i] = str[str.index(str.startIndex, offsetBy: i)]
             }
             for i in 0..<game.pieceCandidates.count {
                 switch game.pieceCandidates[i].identifier {
@@ -289,6 +290,7 @@ struct Game {
                 
                 usePieceIndexes.insert(i)
                 printMe()
+//                checkError()
                 
                 //check if complete
                 if nextEmptyPosition() == nil {
@@ -299,10 +301,7 @@ struct Game {
                 
                 fillNextSpace()
                 
-                //undo last step
-                for p in pointList {
-                    space[p.index] = " "
-                }
+                //continue from last step as if no match has been found
                 usePieceIndexes.remove(i)
                 
                 if getNextPointList(points: &pointList, piece: piece) {continue}
@@ -310,8 +309,6 @@ struct Game {
             }
             
             space[pointList[0].index] = " "
-            print("Can fit \(piece.identifier) in")
-            printMe()
         }
     }
     
@@ -319,6 +316,7 @@ struct Game {
         var stringList = Array(repeating: "", count: 5)
         for z in 0...4 {
             for y in 0...4 - z {
+                if stringList[y].isEmpty {stringList[y] = "\(y)) "}
                 for x in 0...4 - z {
                     stringList[y] += String(space[PointInt3D(x: x, y: y, z: z).index])
                 }
@@ -329,5 +327,25 @@ struct Game {
             x + y + "\n"
         })
         print(numberSum)
+    }
+    
+    private func checkError() {
+        var map = [Character: Int]()
+        for i in 0...54 {
+            let char = space[i]
+            if let n = map[char] {
+                map[char] = n + 1
+            } else {
+                map[char] = 1
+            }
+        }
+        for i in 0..<pieceCandidates.count {
+            let piece = pieceCandidates[i]
+            if usePieceIndexes.contains(i) {
+                assert(map[piece.identifier] == piece.ballCount, "piece \(piece.identifier) ball count is \(map[piece.identifier] ?? 0), but should be \(piece.ballCount)")
+            } else {
+                assert((map[piece.identifier] ?? 0) == 0)
+            }
+        }
     }
 }
