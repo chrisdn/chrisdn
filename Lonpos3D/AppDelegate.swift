@@ -14,7 +14,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.global(qos: .background).async {
             var game = Game()
             var usePieces = Set<Character>()
-            let str = "UU  SU   SU  SSU  S" // initial board
+            // initial board
+            let str = "BBFFFBBWSFBWWSFWWYSSYYYYS"//UU  SU   SU  SSU  S"
             for i in 0..<str.count {
                 let char = str[str.index(str.startIndex, offsetBy: i)]
                 game.space[i] = char
@@ -29,7 +30,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             game.checkError()
             
-            game.fillNextSpace()
+            game.fillNextSpace(level: 0)
             print("weiwei done")
         }
     }
@@ -277,7 +278,7 @@ struct Game {
         return true
     }
     
-    mutating func fillNextSpace() {
+    mutating func fillNextSpace(level: Int) {
         func getNextPointList(points: inout [PointInt3D], piece: Piece) -> Bool {
             var lp = points.removeLast()
             space[lp.index()] = " "
@@ -355,11 +356,10 @@ struct Game {
                 //check if complete
                 if nextEmptyPosition() == nil {
                     print("weiwei success")
-                    print(space)
                     abort()
                 }
                 
-                fillNextSpace()
+                fillNextSpace(level: level + 1)
                 
                 //continue from last step as if no match has been found
                 usePieceIndexes.remove(i)
