@@ -58,6 +58,10 @@ struct PointInt3D {
     static let sqrt2_2 = sqrtf(2) / 2
     
     func index(outOfBoundAllowed: Bool = false) -> Int {
+        if z < 0 || z > 4 {return -1}
+        if !((0...4 - z) ~= x) || !((0...4 - z) ~= y) {
+            return -1
+        }
         switch z {
         case 0:
             return y * 5 + x
@@ -208,11 +212,25 @@ struct Game {
                     }
                 }
             }
-            //4 heighbors in upper level
+            //4 neighbors in upper level
             p.z = pos.z + 1
             for x in pos.x - 1...pos.x {
                 p.x = x
                 for y in pos.y - 1...pos.y {
+                    p.y = y
+                    let index = p.index(outOfBoundAllowed: true)
+                    if 0...54 ~= index {
+                        score += space[index] == " " ? 0 : 1
+                    } else {
+                        score += 1
+                    }
+                }
+            }
+            //4 neighbors in same level
+            p.z = pos.z
+            for x in pos.x - 1...pos.x + 1 {
+                p.x = x
+                for y in pos.y - 1...pos.y + 1 where x != pos.x || y != pos.y {
                     p.y = y
                     let index = p.index(outOfBoundAllowed: true)
                     if 0...54 ~= index {
@@ -243,6 +261,7 @@ struct Game {
                 break
             }
         } while true
+        print("max level:", maxDifficultLevel)
         return savePos
     }
     
