@@ -15,7 +15,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             var game = Game()
             var usePieces = Set<Character>()
             // initial board
-            let str = "BBFFFBBWSFBWWSFWWYSSYYYYS"//UU  SU   SU  SSU  S"
+            let str =
+            "BBFFFBBWSFBWWSFWWYSSYYYYS"
+            //"UU  SU   SU  SSU  S"
             for i in 0..<str.count {
                 let char = str[str.index(str.startIndex, offsetBy: i)]
                 game.space[i] = char
@@ -188,7 +190,7 @@ struct Game {
     let pieceCandidates: [Piece] = [Piece.H, Piece.L, Piece.U, Piece.F, Piece.S, Piece.C, Piece.W, Piece.X, Piece.B, Piece.Z, Piece.O, Piece.Y]
     var usePieceIndexes = IndexSet()
     
-    private var mostDifficultPosition: PointInt3D? {
+    var mostDifficultPosition: PointInt3D? {
         func neighbors(pos: PointInt3D) -> Int {
             var score = 0
             var p = PointInt3D(x: 0, y: 0, z: 0)
@@ -247,7 +249,7 @@ struct Game {
     private func nextEmptyPosition(from lastPoint: PointInt3D? = nil) -> PointInt3D? {
         if let lp = lastPoint, lp.index() >= 54 {return nil}
         
-        for i in ((lastPoint?.index() ?? 0) + 1)...54 where space[i] == " " {
+        for i in ((lastPoint?.index() ?? -1) + 1)...54 where space[i] == " " {
             return PointInt3D.point(from: i);
         }
         return nil
@@ -350,13 +352,14 @@ struct Game {
                 }
                 
                 usePieceIndexes.insert(i)
-                printMe()
+                print(level)
 //                checkError()
                 
                 //check if complete
                 if nextEmptyPosition() == nil {
                     print("weiwei success")
-                    abort()
+                    printMe()
+                    exit(0)
                 }
                 
                 fillNextSpace(level: level + 1)

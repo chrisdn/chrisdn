@@ -12,7 +12,18 @@
 		4CA5272B26D30A9200924FEF /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = 4CA5272A26D30A9200924FEF /* art.scnassets */; };
 		4CA5272D26D30A9200924FEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4CA5272C26D30A9200924FEF /* Assets.xcassets */; };
 		4CA5273026D30A9200924FEF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4CA5272E26D30A9200924FEF /* Main.storyboard */; };
+		4CB41B0126D686D2008B95AD /* Lonpos3DTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB41B0026D686D2008B95AD /* Lonpos3DTests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4CB41B0226D686D2008B95AD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4CA5271B26D30A9200924FEF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4CA5272226D30A9200924FEF;
+			remoteInfo = Lonpos3D;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		4CA5272326D30A9200924FEF /* Lonpos3D.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lonpos3D.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -21,10 +32,19 @@
 		4CA5272A26D30A9200924FEF /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
 		4CA5272C26D30A9200924FEF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4CA5272F26D30A9200924FEF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		4CB41AFE26D686D2008B95AD /* Lonpos3DTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Lonpos3DTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CB41B0026D686D2008B95AD /* Lonpos3DTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lonpos3DTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		4CA5272026D30A9200924FEF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4CB41AFB26D686D2008B95AD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -38,6 +58,7 @@
 			isa = PBXGroup;
 			children = (
 				4CA5272526D30A9200924FEF /* Lonpos3D */,
+				4CB41AFF26D686D2008B95AD /* Lonpos3DTests */,
 				4CA5272426D30A9200924FEF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				4CA5272326D30A9200924FEF /* Lonpos3D.app */,
+				4CB41AFE26D686D2008B95AD /* Lonpos3DTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -60,6 +82,14 @@
 				4CA5272E26D30A9200924FEF /* Main.storyboard */,
 			);
 			path = Lonpos3D;
+			sourceTree = "<group>";
+		};
+		4CB41AFF26D686D2008B95AD /* Lonpos3DTests */ = {
+			isa = PBXGroup;
+			children = (
+				4CB41B0026D686D2008B95AD /* Lonpos3DTests.swift */,
+			);
+			path = Lonpos3DTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -82,6 +112,24 @@
 			productReference = 4CA5272326D30A9200924FEF /* Lonpos3D.app */;
 			productType = "com.apple.product-type.application";
 		};
+		4CB41AFD26D686D2008B95AD /* Lonpos3DTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4CB41B0626D686D2008B95AD /* Build configuration list for PBXNativeTarget "Lonpos3DTests" */;
+			buildPhases = (
+				4CB41AFA26D686D2008B95AD /* Sources */,
+				4CB41AFB26D686D2008B95AD /* Frameworks */,
+				4CB41AFC26D686D2008B95AD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4CB41B0326D686D2008B95AD /* PBXTargetDependency */,
+			);
+			name = Lonpos3DTests;
+			productName = Lonpos3DTests;
+			productReference = 4CB41AFE26D686D2008B95AD /* Lonpos3DTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -94,6 +142,10 @@
 				TargetAttributes = {
 					4CA5272226D30A9200924FEF = {
 						CreatedOnToolsVersion = 13.0;
+					};
+					4CB41AFD26D686D2008B95AD = {
+						CreatedOnToolsVersion = 13.0;
+						TestTargetID = 4CA5272226D30A9200924FEF;
 					};
 				};
 			};
@@ -111,6 +163,7 @@
 			projectRoot = "";
 			targets = (
 				4CA5272226D30A9200924FEF /* Lonpos3D */,
+				4CB41AFD26D686D2008B95AD /* Lonpos3DTests */,
 			);
 		};
 /* End PBXProject section */
@@ -126,6 +179,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4CB41AFC26D686D2008B95AD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -138,7 +198,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4CB41AFA26D686D2008B95AD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4CB41B0126D686D2008B95AD /* Lonpos3DTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4CB41B0326D686D2008B95AD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4CA5272226D30A9200924FEF /* Lonpos3D */;
+			targetProxy = 4CB41B0226D686D2008B95AD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		4CA5272E26D30A9200924FEF /* Main.storyboard */ = {
@@ -323,6 +399,52 @@
 			};
 			name = Release;
 		};
+		4CB41B0426D686D2008B95AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8465NMS935;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.asi.game.Lonpos3DTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lonpos3D.app/Contents/MacOS/Lonpos3D";
+			};
+			name = Debug;
+		};
+		4CB41B0526D686D2008B95AD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8465NMS935;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.asi.game.Lonpos3DTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lonpos3D.app/Contents/MacOS/Lonpos3D";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -340,6 +462,15 @@
 			buildConfigurations = (
 				4CA5273426D30A9200924FEF /* Debug */,
 				4CA5273526D30A9200924FEF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4CB41B0626D686D2008B95AD /* Build configuration list for PBXNativeTarget "Lonpos3DTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4CB41B0426D686D2008B95AD /* Debug */,
+				4CB41B0526D686D2008B95AD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
