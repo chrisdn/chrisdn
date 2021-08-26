@@ -303,11 +303,19 @@ struct Game {
         return savePos
     }
     
+    private func nextEmptyIndex(from lastIndex: Int?) -> Int? {
+        if let li = lastIndex, li >= 54 {return nil}
+        for i in ((lastIndex ?? -1) + 1)...54 where space[i] == " " {
+            return i
+        }
+        return nil
+    }
+    
     private func nextEmptyPosition(from lastPoint: PointInt3D? = nil) -> PointInt3D? {
-        if let lp = lastPoint, lp.index() >= 54 {return nil}
-        
-        for i in ((lastPoint?.index() ?? -1) + 1)...54 where space[i] == " " {
-            return PointInt3D.point(from: i);
+        let lastIndex = lastPoint?.index()
+        let pnextIndex = nextEmptyIndex(from: lastIndex)
+        if let nextIndex = pnextIndex {
+            return PointInt3D.point(from: nextIndex)
         }
         return nil
     }
@@ -350,11 +358,16 @@ struct Game {
     }
     
     private mutating func getNextEmptyPointIndexList(list: inout [Int], piece: Piece) -> Bool {
+        var lastIndex = -1
         if list.count == piece.ballCount {
-            let lp = list.removeLast()
-            space[lp] = " "
+            let li = list.removeLast()
+            space[li] = " "
+            lastIndex = li
+        } else if list.count == 0 {
+            guard let firstIndex = nextEmptyIndex(from: nil) else {return false}
+            list.append(firstIndex)
+            lastIndex = firstIndex
         }
-        var lastIndex: Int  = list.count > 1 ? list.last ?? -1 : -1
         while list.count < piece.ballCount {
             var pindex: Int?
             for i in lastIndex...54 where i > lastIndex && space[i] == " " {
@@ -529,7 +542,7 @@ struct Game {
 //        printMe()
         var result = [] as [Game]
         var newGame = self
-        guard let firstPoint = mostDifficultPosition /*newGame.nextEmptyPosition(from: nil)*/  else {printMe();exit(0)}
+        guard let firstPoint = mostDifficultPosition else {printMe();exit(0)}
         for i in 0..<Game.pieceCandidates.count where !usePieceIndexes.contains(i) {
             let piece = Game.pieceCandidates[i]
             newGame.space[firstPoint.index()] = piece.identifier
