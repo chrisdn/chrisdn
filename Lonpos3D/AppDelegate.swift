@@ -17,7 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // initial board
             let str =
             "BBFFFBBWSFBWWSFWWYSSYYYYS"
-            //"UU  SU   SU  SSU  S"
+             //"UU  SU   SU  SSU  S"
             for i in 0..<str.count {
                 let char = str[str.index(str.startIndex, offsetBy: i)]
                 game.space[i] = char
@@ -32,7 +32,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             game.checkError()
             
-            game.fillNextSpace(level: 0)
+//            game.fillNextSpace(level: 0)
+            Game.start(game: game)
             print("weiwei done")
         }
     }

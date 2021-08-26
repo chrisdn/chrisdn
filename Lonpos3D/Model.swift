@@ -110,50 +110,109 @@ struct Piece {
     }
     
     static var H: Piece {
+        /*
+         HH
+         H
+         */
         return Piece(identifier: "H", ballCount: 3, maxLength: 2, distanceSet: [[1,2], [1,1]])
     }
     
     static var L: Piece {
+        /* Shape L
+         L
+         L
+         LL
+         */
         return Piece(identifier: "L", ballCount: 4, maxLength: 5, distanceSet: [[1,4,5], [1,1,2], [1,1,4], [1,2,5]])
     }
     
     static var U: Piece {
+        /* Umbrella
+         U
+         U
+         U
+         UU
+         */
         return Piece(identifier: "U", ballCount: 5, maxLength: 10, distanceSet: [[1,4,9,10], [1,1,4,5], [1,1,2,4], [1,1,4,9], [1,2,5,10]])
     }
     
     static var F: Piece {
+        /*
+         FFF
+         F
+         F
+         */
         return Piece(identifier: "F", ballCount: 5, maxLength: 8, distanceSet: [[1,4,5,8], [1,1,2,5], [1,1,4,4]])
     }
     
     static var S: Piece {
+        /*
+          S
+          S
+         SS
+         S
+         */
         return Piece(identifier: "S", ballCount: 5, maxLength: 10, distanceSet: [[1,4,5,10], [1,1,2,5], [1,1,2,4], [1,1,2,5], [1,2,5,10]])
     }
     
     static var C: Piece {
+        /* Shape C
+         CC
+         C
+         CC
+         */
         return Piece(identifier: "C", ballCount: 5, maxLength: 5, distanceSet: [[1,2,4,5], [1,1,4,5], [1,1,2,2]])
     }
     
     static var W: Piece {
+        /* Shape W
+         WW
+          WW
+           WW
+         */
         return Piece(identifier: "W", ballCount: 5, maxLength: 8, distanceSet: [[1,2,5,8], [1,1,2,5], [1,1,2,2]])
     }
     
     static var X: Piece {
+        /* Shape X
+          X
+         XXX
+          X
+         */
         return Piece(identifier: "X", ballCount: 5, maxLength: 4, distanceSet: [[1,1,1,1], [1,2,2,4]])
     }
     
     static var B: Piece {
+        /* Shape B
+         B
+         BB
+         BB
+         */
         return Piece(identifier: "B", ballCount: 5, maxLength: 5, distanceSet: [[1,2,4,5], [1,1,1,2], [1,1,2,2], [1,1,2,4], [1,1,2,5]])
     }
     
     static var Z: Piece {
+        /* Zero
+         ZZ
+         ZZ
+         */
         return Piece(identifier: "Z", ballCount: 4, maxLength: 2, distanceSet: [[1,1,2]])
     }
     
     static var O: Piece {
+        /* One line
+         OOOO
+         */
         return Piece(identifier: "O", ballCount: 4, maxLength: 9, distanceSet: [[1,4,9], [1,1,4]])
     }
     
     static var Y: Piece {
+        /* Shape Y
+          Y
+         YY
+          Y
+          Y
+         */
         return Piece(identifier: "Y", ballCount: 5, maxLength: 9, distanceSet: [[1,2,4,9], [1,1,1,4], [1,2,2,5], [1,1,2,4], [1,4,5,9]])
     }
 }
@@ -244,61 +303,77 @@ struct Game {
     }
     
     private func isSameZ(pointList: [PointInt3D]) -> Bool {
-        var set = Set<Int>()
+        var lastZ: Int?
         for p in pointList {
-            set.insert(p.z)
-            if set.count > 1 {
-                return false
+            if let lz = lastZ {
+                if lz != p.z {return false}
+            } else {
+                lastZ = p.z
             }
         }
         return true
     }
     
     private func isSamePlaneVertically(pointList: [PointInt3D]) -> Bool {
-        var plusSet = Set<Int>()
-        var minusSet = Set<Int>()
+        var plusValue: Int?
+        var minusValue: Int?
+        var hasMultiplePlusValue = false
+        var hasMultpleMinusValue = false
         for p in pointList {
             let seaPoint = p.seaPoint
-            plusSet.insert(seaPoint.x + seaPoint.y)
-            minusSet.insert(seaPoint.x - seaPoint.y)
-            if plusSet.count > 1 && minusSet.count > 1 {
+            if let pv = plusValue, let mv = minusValue {
+                if pv != seaPoint.x + seaPoint.y {
+                    hasMultiplePlusValue = true
+                }
+                if mv != seaPoint.x - seaPoint.y {
+                    hasMultpleMinusValue = true
+                }
+            } else {
+                plusValue = seaPoint.x + seaPoint.y
+                minusValue = seaPoint.x - seaPoint.y
+            }
+            if hasMultpleMinusValue && hasMultiplePlusValue {
                 return false
             }
         }
         return true
     }
     
-    mutating func fillNextSpace(level: Int) {
-        func getNextPointList(points: inout [PointInt3D], piece: Piece) -> Bool {
-            var lp = points.removeLast()
-            space[lp.index()] = " "
-            repeat {
-                guard let np = nextEmptyPosition(from: lp) else {
-                    if points.count < 2 {
-                        return false
-                    }
-                    lp = points.removeLast()
-                    space[lp.index()] = " "
-                    continue
-                }
-                lp = np
-                //make sure piece.maxLength is cmplied
-                let p0 = np.floatPoint
-                if points.count > 1 {
-                    for i in 0..<points.count - 1 {
-                        let distance = p0.distance(from: points[i].floatPoint)
-                        if distance > piece.maxLength {
-                            continue
-                        }
-                    }
-                }
-                
-                points.append(np)
-                space[np.index()] = piece.identifier
-            } while points.count < piece.ballCount
-            
-            return true
+    private mutating func getNextPointList(points: inout [PointInt3D], piece: Piece) -> Bool {
+        var lp: PointInt3D?
+        if points.count == piece.ballCount {
+            lp = points.removeLast()
+            space[lp!.index()] = " "
         }
+        repeat {
+            guard let np = nextEmptyPosition(from: lp) else {
+                if points.count < 2 {
+                    return false
+                }
+                lp = points.removeLast()
+                space[lp!.index()] = " "
+                continue
+            }
+            lp = np
+            //make sure piece.maxLength is cmplied
+            let p0 = np.floatPoint
+            if points.count > 1 {
+                for i in 0..<points.count - 1 {
+                    let distance = p0.distance(from: points[i].floatPoint)
+                    if distance > piece.maxLength {
+                        continue
+                    }
+                }
+            }
+            
+            points.append(np)
+            space[np.index()] = piece.identifier
+        } while points.count < piece.ballCount
+        
+        return true
+    }
+    
+    mutating func fillNextSpace(level: Int) {
         
         guard let firstPos = mostDifficultPosition else {return}
         for i in 0..<pieceCandidates.count where !usePieceIndexes.contains(i) {
@@ -368,7 +443,7 @@ struct Game {
             }
         } // all unused pieces tried
         print("continue last step")
-    }
+    } // endif
     
     private func printMe() {
         var stringList = Array(repeating: "", count: 5)
@@ -402,8 +477,47 @@ struct Game {
             if usePieceIndexes.contains(i) {
                 assert(map[piece.identifier] == piece.ballCount, "piece \(piece.identifier) ball count is \(map[piece.identifier] ?? 0), but should be \(piece.ballCount)")
             } else {
-                assert((map[piece.identifier] ?? 0) == 0)
+                assert((map[piece.identifier] ?? 0) == 0, "Piece \(piece.identifier) not used, but board has at least one of its balls")
             }
+        }
+    }
+    
+    private func spawnFromNextPoint() -> [Game] {
+//        printMe()
+        var result = [] as [Game]
+        var newGame = self
+        guard let firstPoint = newGame.nextEmptyPosition(from: nil)  else {printMe();exit(0)}
+        for i in 0..<pieceCandidates.count where !usePieceIndexes.contains(i) {
+            let piece = pieceCandidates[i]
+            newGame.space[firstPoint.index()] = piece.identifier
+            var pointList = [firstPoint]
+            while newGame.getNextPointList(points: &pointList, piece: piece) {
+                assert(firstPoint == pointList[0], "\(firstPoint) != \(pointList[0])")
+                assert(pointList.count == piece.ballCount)
+                
+                //check if all points belong to a same plane
+                if (isSameZ(pointList: pointList) || isSamePlaneVertically(pointList: pointList)) && piece.isValidPoints(pointList: pointList) {
+                    newGame.usePieceIndexes.insert(i)
+                    result.append(newGame)
+                    newGame.usePieceIndexes.remove(i)
+                }
+                
+                
+            }
+        }
+        return result
+    }
+    
+    internal static func start(game: Game) {
+        var list = [game]
+        var nextList = [] as [Game]
+        while !list.isEmpty {
+            for game in list {
+                nextList.append(contentsOf: game.spawnFromNextPoint())
+            }
+            list = nextList
+            nextList = []
+            print(list.count)
         }
     }
 }
