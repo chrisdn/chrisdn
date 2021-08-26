@@ -24,8 +24,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 usePieces.insert(char)
             }
             usePieces.remove(" ")
-            for i in 0..<game.pieceCandidates.count {
-                let id = game.pieceCandidates[i].identifier
+            for i in 0..<Game.pieceCandidates.count {
+                let id = Game.pieceCandidates[i].identifier
                 if usePieces.contains(id) {
                     game.usePieceIndexes.insert(i)
                 }
