@@ -374,7 +374,12 @@ struct Game {
                 pindex = i
                 break
             }
-            guard let index = pindex else {return false}
+            guard let index = pindex else {
+                if list.count == 1 {return false}
+                lastIndex = list.removeLast()
+                space[lastIndex] = " "
+                continue
+            }
             //make sure piece maxLength is complied
             var complied = true
             for i in list {
@@ -538,20 +543,26 @@ struct Game {
         }
     }
     
+    private func pointList(from indexList: [Int]) -> [PointInt3D] {
+        return indexList.map{PointInt3D.point(from: $0)}
+    }
+    
     private func spawnFromNextPoint() -> [Game] {
 //        printMe()
         var result = [] as [Game]
         var newGame = self
         guard let firstPoint = mostDifficultPosition else {printMe();exit(0)}
+        let firstIndex = firstPoint.index()
         for i in 0..<Game.pieceCandidates.count where !usePieceIndexes.contains(i) {
             let piece = Game.pieceCandidates[i]
             newGame.space[firstPoint.index()] = piece.identifier
-            var pointList = [firstPoint]
-            while newGame.getNextPointList(points: &pointList, piece: piece) {
-                assert(firstPoint == pointList[0], "\(firstPoint) != \(pointList[0])")
-                assert(pointList.count == piece.ballCount)
+            var indexList = [firstIndex]
+            while newGame.getNextEmptyPointIndexList(list: &indexList, piece: piece) {
+                assert(indexList.count == piece.ballCount)
                 
                 //check if all points belong to a same plane
+                let pointList = pointList(from: indexList)
+//                newGame.printMe()
                 if (isSameZ(pointList: pointList) || isSamePlaneVertically(pointList: pointList)) && piece.isValidPoints(pointList: pointList) {
                     newGame.usePieceIndexes.insert(i)
                     result.append(newGame)
