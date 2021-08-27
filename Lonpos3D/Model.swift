@@ -426,9 +426,30 @@ struct Game {
         return result
     }
     
-    internal static func start(game: Game) {
+    static func start(_ strInitialBoard: String) {
+        var game = Game()
+        var usePieces = Set<Character>()
+        for i in 0..<strInitialBoard.count {
+            let char = strInitialBoard[strInitialBoard.index(strInitialBoard.startIndex, offsetBy: i)]
+            if char != " " {
+                game.space[i] = char
+                usePieces.insert(char)
+            }
+        }
+        
+        for i in 0..<Game.pieceCandidates.count {
+            let id = Game.pieceCandidates[i].identifier
+            if usePieces.contains(id) {
+                game.usePieceIndexes.insert(i)
+            }
+        }
+        game.checkError()
+        game.start()
+    }
+    
+    func start() {
         NSLog("Start")
-        var list = [game]
+        var list = [self]
         var nextList = [] as [Game]
         while !list.isEmpty {
             for game in list {
