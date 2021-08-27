@@ -7,21 +7,6 @@
 
 import Foundation
 
-struct Point2D {
-    var x, y: Int
-}
-
-struct PointFloat3D {
-    var x, y, z: Float
-    
-    func distance(from p: PointFloat3D) -> Int {
-        let dx = x - p.x
-        let dy = y - p.y
-        let dz = z - p.z
-        return Int(0.5 + dx * dx + dy * dy + dz * dz)
-    }
-}
-
 struct PointInt3D {
     var x, y, z: Int
     static let sqrt2_2 = sqrtf(2) / 2
@@ -48,10 +33,6 @@ struct PointInt3D {
         }
     }
     
-    var seaPoint: Point2D {
-        return Point2D(x: x + x + z, y: y + y + z)
-    }
-    
     static func point(from index: Int) -> PointInt3D {
         switch index {
         case 0..<25:
@@ -68,21 +49,11 @@ struct PointInt3D {
             abort()
         }
     }
-    
-    var floatPoint: PointFloat3D {
-        return PointFloat3D(x: Float(x) + Float(z) / 2, y: Float(y) + Float(z) / 2, z: PointInt3D.sqrt2_2 * Float(z))
-    }
 }
 
 extension PointInt3D: CustomDebugStringConvertible {
     var debugDescription: String {
         "(\(x),\(y),\(z))"
-    }
-}
-
-extension PointInt3D: Equatable {
-    public static func != (lhs: Self, rhs: Self) -> Bool {
-        return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z
     }
 }
 
@@ -92,13 +63,13 @@ struct Piece {
     var maxLength: Int
     var distanceSet: Set<[Int]>
     
-    func isValidPoints(pointList: [PointInt3D]) -> Bool {
+    func isValidPoints(indexList: [Int]) -> Bool {
         var tSet = Set<[Int]>()
-        for i in 0..<pointList.count {
-            let p0 = pointList[i].floatPoint
+        for i in 0..<indexList.count {
+            let index0 = indexList[i]
             var list = [Int]()
-            for j in 0..<pointList.count where i != j {
-                list.append(p0.distance(from: pointList[j].floatPoint))
+            for j in 0..<indexList.count where i != j {
+                list.append(index0.distance(from: indexList[j]))
             }
             list.sort()
             if !distanceSet.contains(list) {
@@ -232,7 +203,7 @@ struct Game {
         return Game.DistanceTable[from * 55 + to]
     }
     
-    var mostDifficultPosition: PointInt3D? {
+    private var mostDifficultPosition: PointInt3D? {
         func neighbors(pos: PointInt3D) -> Int {
             var score = 0
             var p = PointInt3D(x: 0, y: 0, z: 0)
@@ -332,23 +303,25 @@ struct Game {
         return true
     }
     
-    private func isSamePlaneVertically(pointList: [PointInt3D]) -> Bool {
+    private func isSamePlaneVertically(indexList: [Int]) -> Bool {
         var plusValue: Int?
         var minusValue: Int?
         var hasMultiplePlusValue = false
         var hasMultpleMinusValue = false
-        for p in pointList {
-            let seaPoint = p.seaPoint
+        for index in indexList {
+            let p = PointInt3D.point(from: index)
+            let plus = p.x + p.y + p.z
+            let minus = p.x - p.y
             if let pv = plusValue, let mv = minusValue {
-                if pv != seaPoint.x + seaPoint.y {
+                if pv != plus {
                     hasMultiplePlusValue = true
                 }
-                if mv != seaPoint.x - seaPoint.y {
+                if mv != minus {
                     hasMultpleMinusValue = true
                 }
             } else {
-                plusValue = seaPoint.x + seaPoint.y
-                minusValue = seaPoint.x - seaPoint.y
+                plusValue = plus
+                minusValue = minus
             }
             if hasMultpleMinusValue && hasMultiplePlusValue {
                 return false
@@ -397,132 +370,6 @@ struct Game {
         return true
     }
     
-    private mutating func getNextPointList(points: inout [PointInt3D], piece: Piece) -> Bool {
-        var lp: PointInt3D?
-        if points.count == piece.ballCount {
-            lp = points.removeLast()
-            space[lp!.index()] = " "
-        }
-        repeat {
-            guard let np = nextEmptyPosition(from: lp) else {
-                if points.count < 2 {
-                    return false
-                }
-                lp = points.removeLast()
-                space[lp!.index()] = " "
-                continue
-            }
-            lp = np
-            //make sure piece.maxLength is cmplied
-            let p0 = np.floatPoint
-            var complied = true
-            if points.count > 1 {
-                for i in 0..<points.count - 1 {
-                    let distance = p0.distance(from: points[i].floatPoint)
-                    if distance > piece.maxLength {
-                        complied = false
-                        break
-                    }
-                }
-            }
-            if complied {
-                points.append(np)
-                space[np.index()] = piece.identifier
-            }
-        } while points.count < piece.ballCount
-        
-        return true
-    }
-    
-    mutating func fillNextSpace(level: Int) {
-        
-        guard let firstPos = mostDifficultPosition else {return}
-        for i in 0..<Game.pieceCandidates.count where !usePieceIndexes.contains(i) {
-            print(firstPos)
-            let piece = Game.pieceCandidates[i]
-            space[firstPos.index()] = piece.identifier
-            var pointList = [firstPos]
-            while (true) {
-                
-                while pointList.count < piece.ballCount {
-                    guard let p = nextEmptyPosition(from: pointList.last) else {break}
-                    pointList.append(p)
-                    space[p.index()] = piece.identifier
-                }
-                if pointList.count < piece.ballCount {
-                    if getNextPointList(points: &pointList, piece: piece) {continue}
-                    break
-                }
-                
-//                if piece.identifier == "C" {
-//                    var debugstr = ""
-//                    for p in pointList {
-//                        debugstr += "\(p.x)\(p.y)\(p.z)"
-//                    }
-//                    if debugstr.hasPrefix("111002112113004") {
-//                        printMe()
-//                    }
-//                }
-                
-                //check if all points belong to a same plane
-                if !isSameZ(pointList: pointList) && !isSamePlaneVertically(pointList: pointList) {
-                    if getNextPointList(points: &pointList, piece: piece) {continue}
-                    break
-                }
-                
-                //check if any 2 points distance match piece distance set
-                if !piece.isValidPoints(pointList: pointList) {
-                    if getNextPointList(points: &pointList, piece: piece) {continue}
-                    break
-                }
-                
-                usePieceIndexes.insert(i)
-                printMe()
-//                print(level)
-//                checkError()
-                
-                //check if complete
-                if nextEmptyPosition() == nil {
-                    print("weiwei success")
-                    printMe()
-                    exit(0)
-                }
-                
-                fillNextSpace(level: level + 1)
-                
-                //continue from last step as if no match has been found
-                usePieceIndexes.remove(i)
-                
-                if getNextPointList(points: &pointList, piece: piece) {continue}
-                break
-            } // all pointlist combination tried
-            
-            if let index = pointList.first?.index() {
-                space[index] = " "
-            } else {
-                print()
-            }
-        } // all unused pieces tried
-        print("continue last step")
-    } // endif
-    
-    private func printMe() {
-        var stringList = Array(repeating: "", count: 5)
-        for z in 0...4 {
-            for y in 0...4 - z {
-                if stringList[y].isEmpty {stringList[y] = "\(y)) "}
-                for x in 0...4 - z {
-                    stringList[y] += String(space[PointInt3D(x: x, y: y, z: z).index()])
-                }
-                stringList[y] += " | "
-            }
-        }
-        let numberSum = stringList.reduce("", { x, y in
-            x + y + "\n"
-        })
-        print(numberSum)
-    }
-    
     func checkError() {
         var map = [Character: Int]()
         for i in 0...54 {
@@ -548,10 +395,13 @@ struct Game {
     }
     
     private func spawnFromNextPoint() -> [Game] {
-//        printMe()
         var result = [] as [Game]
         var newGame = self
-        guard let firstPoint = mostDifficultPosition else {printMe();exit(0)}
+        guard let firstPoint = mostDifficultPosition else {
+            NSLog("Success")
+            print(self)
+            return []
+        }
         let firstIndex = firstPoint.index()
         for i in 0..<Game.pieceCandidates.count where !usePieceIndexes.contains(i) {
             let piece = Game.pieceCandidates[i]
@@ -562,8 +412,9 @@ struct Game {
                 
                 //check if all points belong to a same plane
                 let pointList = pointList(from: indexList)
-//                newGame.printMe()
-                if (isSameZ(pointList: pointList) || isSamePlaneVertically(pointList: pointList)) && piece.isValidPoints(pointList: pointList) {
+                if (isSameZ(pointList: pointList) || isSamePlaneVertically(indexList: indexList))
+                    && piece.isValidPoints(indexList: indexList)
+                {
                     newGame.usePieceIndexes.insert(i)
                     result.append(newGame)
                     newGame.usePieceIndexes.remove(i)
@@ -576,6 +427,7 @@ struct Game {
     }
     
     internal static func start(game: Game) {
+        NSLog("Start")
         var list = [game]
         var nextList = [] as [Game]
         while !list.isEmpty {
@@ -584,7 +436,32 @@ struct Game {
             }
             list = nextList
             nextList = []
-            print(list.count)
+            NSLog("%ld", list.count)
         }
+    }
+}
+
+extension Game: CustomDebugStringConvertible {
+    var debugDescription: String {
+        var stringList = Array(repeating: "", count: 5)
+        for z in 0...4 {
+            for y in 0...4 - z {
+                if stringList[y].isEmpty {stringList[y] = "\(y)) "}
+                for x in 0...4 - z {
+                    stringList[y] += String(space[PointInt3D(x: x, y: y, z: z).index()])
+                }
+                stringList[y] += " | "
+            }
+        }
+        let numberSum = stringList.reduce("", { x, y in
+            x + y + "\n"
+        })
+        return numberSum
+    }
+}
+
+extension Int {
+    func distance(from index: Int) -> Int {
+        return Game.DistanceTable[self * 55 + index]
     }
 }

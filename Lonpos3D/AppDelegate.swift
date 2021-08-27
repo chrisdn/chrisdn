@@ -11,13 +11,14 @@ import Cocoa
 class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        DispatchQueue.global(qos: .background).async {
+        let queue = DispatchQueue(label: "lonpos_queue")
+        queue.async {
             var game = Game()
             var usePieces = Set<Character>()
             // initial board
             let str =
-            "BBFFFBBWSFBWWSFWWYSSYYYYS"
-             //"UU  SU   SU  SSU  S"
+            //"BBFFFBBWSFBWWSFWWYSSYYYYS"
+            "UU  SU   SU  SSU  S"
             for i in 0..<str.count {
                 let char = str[str.index(str.startIndex, offsetBy: i)]
                 game.space[i] = char
@@ -32,9 +33,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             game.checkError()
             
-//            game.fillNextSpace(level: 0)
             Game.start(game: game)
-            print("weiwei done")
         }
     }
 }
