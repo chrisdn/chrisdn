@@ -11,10 +11,5 @@ import Cocoa
 class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        let queue = DispatchQueue(label: "lonpos_queue")
-        queue.async {
-//            Game.start("BBFFFBBWSFBWWSFWWYSSYYYYS")
-            Game.start("UU  SU   SU  SSU  S")
-        }
     }
 }

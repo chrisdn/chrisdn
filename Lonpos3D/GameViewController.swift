@@ -9,15 +9,13 @@ import SceneKit
 import QuartzCore
 
 class GameViewController: NSViewController {
+    var sceneList = [] as [SCNView]
     
-    func showGame(game: Game) {
-        let scnView = self.view as! SCNView
-        let scene = scnView.scene!
-        guard scene.rootNode.childNode(withName: "weiwei", recursively: true) == nil else {
-            return
-        }
+    private func showGame(game: Game) {
+        let scnView = SCNView()
+        let scene = createScene(scnView: scnView)
+        scnView.scene = scene
         let pyramiad = SCNNode()
-        pyramiad.name = "weiwei"
         for index in 0...54 {
             let p = PointInt3D.point(from: index)
             let char = game.space[index]
@@ -28,27 +26,48 @@ class GameViewController: NSViewController {
             let pos = SCNVector3(Float(p.z) / 2 + Float(p.x) - 2, Float(p.z) * sqrtf(2) / 2, Float(p.z) / 2 + Float(p.y) - 2)
             node.position = pos
             pyramiad.addChildNode(node)
-//            if index > 0 {continue}
-            let action = SCNAction.moveBy(x: pos.x, y: pos.y, z: pos.z, duration: 3)
+            let action = SCNAction.moveBy(x: pos.x, y: pos.y, z: pos.z, duration: 5)
             let a = SCNAction.sequence([action, action.reversed()])
             node.runAction(SCNAction.repeatForever(a))
         }
         
         scene.rootNode.addChildNode(pyramiad)
-        pyramiad.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2, z: 0, duration: 3)))
+//        pyramiad.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2, z: 0, duration: 3)))
+        
+        sceneList.forEach {$0.removeFromSuperview()}
+        scnView.translatesAutoresizingMaskIntoConstraints = false
+        sceneList.append(scnView)
+        sceneList.forEach {self.view.addSubview($0)}
+        var constraints = [NSLayoutConstraint]()
+        var lastSceneView: SCNView?
+        let cols = sceneList.count >= 6 ? 6 : sceneList.count
+        let rows = sceneList.count <= cols ? 1 : CGFloat(ceilf(Float(sceneList.count) / Float(cols)))
+        for i in 0..<sceneList.count {
+            let v = sceneList[i]
+            if i % cols == 0 {
+                lastSceneView = nil
+            }
+            if let lastView = lastSceneView {
+                constraints.append(v.leftAnchor.constraint(equalTo: lastView.rightAnchor))
+                lastSceneView = v
+            } else {
+                constraints.append(v.leftAnchor.constraint(equalTo: self.view.leftAnchor))
+                lastSceneView = v
+            }
+            constraints.append(v.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 1 / CGFloat(cols)))
+            if i / cols > 0 {
+                constraints.append(v.topAnchor.constraint(equalTo: sceneList[i - cols].bottomAnchor))
+            } else {
+                constraints.append(v.topAnchor.constraint(equalTo: self.view.topAnchor))
+            }
+            constraints.append(v.heightAnchor.constraint(equalTo: self.view.heightAnchor, multiplier: 1 / rows))
+        }
+        NSLayoutConstraint.activate(constraints)
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: "lonpos"), object: nil, queue: OperationQueue.main) { note in
-            if let game = note.object as? Game {
-                self.showGame(game: game)
-            }
-        }
-        
+    private func createScene(scnView: SCNView) -> SCNScene {
         // create a new scene
-        let scene = SCNScene(named: "art.scnassets/ship.scn")!
+        let scene = SCNScene()
         
         // create and add a camera to the scene
         let cameraNode = SCNNode()
@@ -63,7 +82,7 @@ class GameViewController: NSViewController {
         let lightNode = SCNNode()
         lightNode.light = SCNLight()
         lightNode.light!.type = .omni
-        lightNode.position = SCNVector3(x: 0, y: 10, z: 10)
+        lightNode.position = SCNVector3(x: 0, y: 10, z: 8)
         scene.rootNode.addChildNode(lightNode)
         
         // create and add an ambient light to the scene
@@ -72,19 +91,6 @@ class GameViewController: NSViewController {
         ambientLightNode.light!.type = .ambient
         ambientLightNode.light!.color = NSColor.darkGray
         scene.rootNode.addChildNode(ambientLightNode)
-        
-        // retrieve the ship node
-        if let ship = scene.rootNode.childNode(withName: "ship", recursively: true) {
-            ship.isHidden = true
-            // animate the 3d object
-            //ship.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2, z: 0, duration: 1)))
-        }
-        
-        // retrieve the SCNView
-        let scnView = self.view as! SCNView
-        
-        // set the scene to the view
-        scnView.scene = scene
         
         // allows the user to manipulate the camera
         scnView.allowsCameraControl = true
@@ -100,12 +106,53 @@ class GameViewController: NSViewController {
         var gestureRecognizers = scnView.gestureRecognizers
         gestureRecognizers.insert(clickGesture, at: 0)
         scnView.gestureRecognizers = gestureRecognizers
+        
+        return scene
+    }
+    
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        
+        if var f = view.window?.frame {
+            f.origin = .zero
+            if f.width < 200 {
+                f.size.width = 200
+            }
+            
+            if f.height  < 200 {
+                f.size.height = 200
+            }
+            
+            view.window?.setFrame(f, display: true)
+        }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        if arc4random() > 0 {return}
+        
+        let queue = DispatchQueue(label: "lonpos_queue")
+        queue.async {
+            Game.start("BBFFFBBWSFBWWSFWWYSSYYYYS")
+//            Game.start("UU  SU   SU  SSU  S")
+        }
+        
+        let view = NSView()
+        view.layer?.backgroundColor = NSColor.purple.cgColor
+        self.view = view
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: "lonpos"), object: nil, queue: OperationQueue.main) { note in
+            if let game = note.object as? Game {
+                self.showGame(game: game)
+            }
+        }
     }
     
     @objc
     func handleClick(_ gestureRecognizer: NSGestureRecognizer) {
         // retrieve the SCNView
-        let scnView = self.view as! SCNView
+        guard let scnView = gestureRecognizer.view as? SCNView else {return}
         
         // check what nodes are clicked
         let p = gestureRecognizer.location(in: scnView)

@@ -382,6 +382,7 @@ struct Game {
                 map[char] = 1
             }
         }
+        print(map)
         for i in 0..<Game.pieceCandidates.count {
             let piece = Game.pieceCandidates[i]
             if usePieceIndexes.contains(i) {
@@ -401,6 +402,7 @@ struct Game {
         var newGame = self
         guard let firstPoint = mostDifficultPosition else {
             NSLog("Success")
+            print(self)
             NotificationQueue.default.enqueue(Notification(name: Notification.Name(rawValue: "lonpos"), object: self, userInfo: nil), postingStyle: .now)
             return []
         }
