@@ -110,32 +110,14 @@ class GameViewController: NSViewController {
         return scene
     }
     
-    override func viewDidAppear() {
-        super.viewDidAppear()
-        
-        if var f = view.window?.frame {
-            f.origin = .zero
-            if f.width < 200 {
-                f.size.width = 200
-            }
-            
-            if f.height  < 200 {
-                f.size.height = 200
-            }
-            
-            view.window?.setFrame(f, display: true)
-        }
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if arc4random() > 0 {return}
-        
         let queue = DispatchQueue(label: "lonpos_queue")
         queue.async {
-            Game.start("BBFFFBBWSFBWWSFWWYSSYYYYS")
+//            Game.start("BBFFFBBWSFBWWSFWWYSSYYYYS")
 //            Game.start("UU  SU   SU  SSU  S")
+            Game.start("FFFY FYYYYF")
         }
         
         let view = NSView()
