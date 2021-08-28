@@ -10,8 +10,42 @@ import QuartzCore
 
 class GameViewController: NSViewController {
     
+    func showGame(game: Game) {
+        let scnView = self.view as! SCNView
+        let scene = scnView.scene!
+        guard scene.rootNode.childNode(withName: "weiwei", recursively: true) == nil else {
+            return
+        }
+        let pyramiad = SCNNode()
+        pyramiad.name = "weiwei"
+        for index in 0...54 {
+            let p = PointInt3D.point(from: index)
+            let char = game.space[index]
+            guard let piece = Game.pieceCandidates.first(where: {$0.identifier == char}) else {abort()}
+            let ball = SCNSphere(radius: 0.5)
+            ball.firstMaterial?.diffuse.contents = piece.color
+            let node = SCNNode(geometry: ball)
+            let pos = SCNVector3(Float(p.z) / 2 + Float(p.x) - 2, Float(p.z) * sqrtf(2) / 2, Float(p.z) / 2 + Float(p.y) - 2)
+            node.position = pos
+            pyramiad.addChildNode(node)
+//            if index > 0 {continue}
+            let action = SCNAction.moveBy(x: pos.x, y: pos.y, z: pos.z, duration: 3)
+            let a = SCNAction.sequence([action, action.reversed()])
+            node.runAction(SCNAction.repeatForever(a))
+        }
+        
+        scene.rootNode.addChildNode(pyramiad)
+        pyramiad.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2, z: 0, duration: 3)))
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: "lonpos"), object: nil, queue: OperationQueue.main) { note in
+            if let game = note.object as? Game {
+                self.showGame(game: game)
+            }
+        }
         
         // create a new scene
         let scene = SCNScene(named: "art.scnassets/ship.scn")!
@@ -22,7 +56,8 @@ class GameViewController: NSViewController {
         scene.rootNode.addChildNode(cameraNode)
         
         // place the camera
-        cameraNode.position = SCNVector3(x: 0, y: 0, z: 15)
+        cameraNode.position = SCNVector3(x: 0, y: 15, z: 5)
+        cameraNode.look(at: SCNVector3(0, 0, 0))
         
         // create and add a light to the scene
         let lightNode = SCNNode()
@@ -39,10 +74,11 @@ class GameViewController: NSViewController {
         scene.rootNode.addChildNode(ambientLightNode)
         
         // retrieve the ship node
-        let ship = scene.rootNode.childNode(withName: "ship", recursively: true)!
-        
-        // animate the 3d object
-        ship.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2, z: 0, duration: 1)))
+        if let ship = scene.rootNode.childNode(withName: "ship", recursively: true) {
+            ship.isHidden = true
+            // animate the 3d object
+            //ship.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2, z: 0, duration: 1)))
+        }
         
         // retrieve the SCNView
         let scnView = self.view as! SCNView

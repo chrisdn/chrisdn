@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AppKit
 
 struct PointInt3D {
     var x, y, z: Int
@@ -62,6 +63,7 @@ struct Piece {
     var ballCount: Int
     var maxLength: Int
     var distanceSet: Set<[Int]>
+    var color: NSColor
     
     func isValidPoints(indexList: [Int]) -> Bool {
         var tSet = Set<[Int]>()
@@ -85,7 +87,7 @@ struct Piece {
          HH
          H
          */
-        return Piece(identifier: "H", ballCount: 3, maxLength: 2, distanceSet: [[1,2], [1,1]])
+        return Piece(identifier: "H", ballCount: 3, maxLength: 2, distanceSet: [[1,2], [1,1]], color: .white)
     }
     
     static var L: Piece {
@@ -94,7 +96,7 @@ struct Piece {
          L
          LL
          */
-        return Piece(identifier: "L", ballCount: 4, maxLength: 5, distanceSet: [[1,4,5], [1,1,2], [1,1,4], [1,2,5]])
+        return Piece(identifier: "L", ballCount: 4, maxLength: 5, distanceSet: [[1,4,5], [1,1,2], [1,1,4], [1,2,5]], color: .orange)
     }
     
     static var U: Piece {
@@ -104,7 +106,7 @@ struct Piece {
          U
          UU
          */
-        return Piece(identifier: "U", ballCount: 5, maxLength: 10, distanceSet: [[1,4,9,10], [1,1,4,5], [1,1,2,4], [1,1,4,9], [1,2,5,10]])
+        return Piece(identifier: "U", ballCount: 5, maxLength: 10, distanceSet: [[1,4,9,10], [1,1,4,5], [1,1,2,4], [1,1,4,9], [1,2,5,10]], color: NSColor(red: 0, green: CGFloat(36) / 255, blue: CGFloat(156) / 255, alpha: 1))
     }
     
     static var F: Piece {
@@ -113,7 +115,7 @@ struct Piece {
          F
          F
          */
-        return Piece(identifier: "F", ballCount: 5, maxLength: 8, distanceSet: [[1,4,5,8], [1,1,2,5], [1,1,4,4]])
+        return Piece(identifier: "F", ballCount: 5, maxLength: 8, distanceSet: [[1,4,5,8], [1,1,2,5], [1,1,4,4]], color: NSColor(red: CGFloat(135) / 255, green: CGFloat(206) / 255, blue: 1, alpha: 1))
     }
     
     static var S: Piece {
@@ -123,7 +125,7 @@ struct Piece {
          SS
          S
          */
-        return Piece(identifier: "S", ballCount: 5, maxLength: 10, distanceSet: [[1,4,5,10], [1,1,2,5], [1,1,2,4], [1,1,2,5], [1,2,5,10]])
+        return Piece(identifier: "S", ballCount: 5, maxLength: 10, distanceSet: [[1,4,5,10], [1,1,2,5], [1,1,2,4], [1,1,2,5], [1,2,5,10]], color: NSColor(red: 0, green: CGFloat(100) / 255, blue: 0, alpha: 1))
     }
     
     static var C: Piece {
@@ -132,7 +134,7 @@ struct Piece {
          C
          CC
          */
-        return Piece(identifier: "C", ballCount: 5, maxLength: 5, distanceSet: [[1,2,4,5], [1,1,4,5], [1,1,2,2]])
+        return Piece(identifier: "C", ballCount: 5, maxLength: 5, distanceSet: [[1,2,4,5], [1,1,4,5], [1,1,2,2]], color: .yellow)
     }
     
     static var W: Piece {
@@ -141,7 +143,7 @@ struct Piece {
           WW
            WW
          */
-        return Piece(identifier: "W", ballCount: 5, maxLength: 8, distanceSet: [[1,2,5,8], [1,1,2,5], [1,1,2,2]])
+        return Piece(identifier: "W", ballCount: 5, maxLength: 8, distanceSet: [[1,2,5,8], [1,1,2,5], [1,1,2,2]], color: NSColor(red: CGFloat(214) / 255, green: CGFloat(37) / 255, blue: CGFloat(152) / 255, alpha: 1))
     }
     
     static var X: Piece {
@@ -150,7 +152,7 @@ struct Piece {
          XXX
           X
          */
-        return Piece(identifier: "X", ballCount: 5, maxLength: 4, distanceSet: [[1,1,1,1], [1,2,2,4]])
+        return Piece(identifier: "X", ballCount: 5, maxLength: 4, distanceSet: [[1,1,1,1], [1,2,2,4]], color: .gray)
     }
     
     static var B: Piece {
@@ -159,7 +161,7 @@ struct Piece {
          BB
          BB
          */
-        return Piece(identifier: "B", ballCount: 5, maxLength: 5, distanceSet: [[1,2,4,5], [1,1,1,2], [1,1,2,2], [1,1,2,4], [1,1,2,5]])
+        return Piece(identifier: "B", ballCount: 5, maxLength: 5, distanceSet: [[1,2,4,5], [1,1,1,2], [1,1,2,2], [1,1,2,4], [1,1,2,5]], color: .red)
     }
     
     static var Z: Piece {
@@ -167,14 +169,14 @@ struct Piece {
          ZZ
          ZZ
          */
-        return Piece(identifier: "Z", ballCount: 4, maxLength: 2, distanceSet: [[1,1,2]])
+        return Piece(identifier: "Z", ballCount: 4, maxLength: 2, distanceSet: [[1,1,2]], color: .green)
     }
     
     static var O: Piece {
         /* One line
          OOOO
          */
-        return Piece(identifier: "O", ballCount: 4, maxLength: 9, distanceSet: [[1,4,9], [1,1,4]])
+        return Piece(identifier: "O", ballCount: 4, maxLength: 9, distanceSet: [[1,4,9], [1,1,4]], color: .purple)
     }
     
     static var Y: Piece {
@@ -184,7 +186,7 @@ struct Piece {
           Y
           Y
          */
-        return Piece(identifier: "Y", ballCount: 5, maxLength: 9, distanceSet: [[1,2,4,9], [1,1,1,4], [1,2,2,5], [1,1,2,4], [1,4,5,9]])
+        return Piece(identifier: "Y", ballCount: 5, maxLength: 9, distanceSet: [[1,2,4,9], [1,1,1,4], [1,2,2,5], [1,1,2,4], [1,4,5,9]], color: NSColor(red: 1, green: CGFloat(192) / 255, blue: CGFloat(203) / 255, alpha: 1))
     }
 }
 
@@ -399,7 +401,7 @@ struct Game {
         var newGame = self
         guard let firstPoint = mostDifficultPosition else {
             NSLog("Success")
-            print(self)
+            NotificationQueue.default.enqueue(Notification(name: Notification.Name(rawValue: "lonpos"), object: self, userInfo: nil), postingStyle: .now)
             return []
         }
         let firstIndex = firstPoint.index()
