@@ -9,7 +9,9 @@ import SceneKit
 import QuartzCore
 
 class GameViewController: NSViewController {
-    var sceneList = [] as [SCNView]
+    private var sceneList = [] as [SCNView]
+    @IBOutlet var inputTextField: NSTextField!
+    @IBOutlet var button: NSButton!
     
     private func showGame(game: Game) {
         let scnView = SCNView()
@@ -110,24 +112,55 @@ class GameViewController: NSViewController {
         return scene
     }
     
+    @IBAction func startGame(sender: NSControl) {
+        let str = inputTextField.stringValue.uppercased().replacingOccurrences(of: ".", with: " ")
+        let strList = str.split(separator: ",").map {String($0)}
+        /*
+         "BBFFFBBWSFBWWSFWWYSSYYYYS"
+         "UU  SU   SU  SSU  S"
+         "FFFY FYYYYF"
+         "Y     YX   X,Y    X,YX X,Y"
+         "Y     YX   X,Y    X,YX X,Y"
+         "B    CBC  CCC,B    B,B"
+         */
+        do {
+            let game = strList.count > 1 ? try Game(strList) : try Game(str)
+            button.isEnabled = false
+            view.addSubview(inputTextField, positioned: .below, relativeTo: button)
+            let queue = DispatchQueue(label: "lonpos_queue")
+            queue.async {
+                game.start()
+            }
+        } catch LonposError.inputError(let msg){
+            //show error to user
+            let alert = NSAlert()
+            alert.messageText = msg
+            alert.alertStyle = .informational
+            alert.addButton(withTitle: "OK")
+            alert.runModal()
+        } catch {
+            print(error)
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let queue = DispatchQueue(label: "lonpos_queue")
-        queue.async {
-//            Game.start("BBFFFBBWSFBWWSFWWYSSYYYYS")
-//            Game.start("UU  SU   SU  SSU  S")
-//            Game.start("FFFY FYYYYF")
-            Game.start("B    CBC  CCC", "B    B", "B")
-        }
-        
-        let view = NSView()
-        view.layer?.backgroundColor = NSColor.purple.cgColor
-        self.view = view
         
         NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: "lonpos"), object: nil, queue: OperationQueue.main) { note in
             if let game = note.object as? Game {
                 self.showGame(game: game)
+            } else {
+                self.button.isEnabled = true
+            }
+        }
+    }
+    
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        
+        if let size = view.window?.frame.size {
+            if size.width < 100 || size.height < 100 {
+                view.window?.setContentSize(NSSize(width: 640, height: 480))
             }
         }
     }

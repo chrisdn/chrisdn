@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="12047" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19158" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13151"/>
-        <plugIn identifier="com.apple.SceneKitIBPlugin" version="13151"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19158"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -675,7 +674,7 @@
                         <outlet property="delegate" destination="Voe-Tx-rLC" id="PrD-fu-P6m"/>
                     </connections>
                 </application>
-                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModuleProvider="target"/>
+                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Lonpos3D" customModuleProvider="target"/>
                 <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -684,7 +683,7 @@
         <!--Window Controller-->
         <scene sceneID="R2V-B0-nI4">
             <objects>
-                <windowController id="B8D-0N-5wS" sceneMemberID="viewController">
+                <windowController showSeguePresentationStyle="single" id="B8D-0N-5wS" sceneMemberID="viewController">
                     <window key="window" title="Lonpos3D" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="IQv-IB-iLA">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
@@ -695,25 +694,72 @@
                         </connections>
                     </window>
                     <connections>
-                        <segue destination="XfG-lQ-9wD" kind="relationship" relationship="window.shadowedContentViewController" id="cq2-FE-JQM"/>
+                        <segue destination="YY0-8h-dIt" kind="relationship" relationship="window.shadowedContentViewController" id="lhx-Tz-ueQ"/>
                     </connections>
                 </windowController>
                 <customObject id="Oky-zY-oP4" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="75" y="250"/>
         </scene>
-        <!--Game View Controller-->
-        <scene sceneID="hIz-AP-VOD">
+        <!--Lonpos 3D-->
+        <scene sceneID="c8Y-LV-xes">
             <objects>
-                <viewController id="XfG-lQ-9wD" customClass="GameViewController" customModuleProvider="target" sceneMemberID="viewController">
-                    <sceneView key="view" loops="NO" preferredRenderingAPI="-1" id="RvT-eo-GD2">
+                <viewController title="Lonpos 3D" id="YY0-8h-dIt" customClass="GameViewController" customModule="Lonpos3D" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="Fh9-UX-Kx6">
                         <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                    </sceneView>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4xv-fc-lSH">
+                                <rect key="frame" x="18" y="254" width="87" height="16"/>
+                                <textFieldCell key="cell" lineBreakMode="clipping" title="Lonpos Input:" id="G7A-9Q-W4r">
+                                    <font key="font" usesAppearanceFont="YES"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField verticalHuggingPriority="750" textCompletion="NO" contentType="oneTimeCode" translatesAutoresizingMaskIntoConstraints="NO" id="eAa-V6-hRw">
+                                <rect key="frame" x="20" y="116" width="410" height="122"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="122" id="7Ss-qG-HEb"/>
+                                </constraints>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" alignment="left" placeholderString="Using letter 'HFCLUWX' etc" drawsBackground="YES" id="MNB-YY-PBL">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <allowedInputSourceLocales>
+                                        <string>NSAllRomanInputSourcesLocaleIdentifier</string>
+                                    </allowedInputSourceLocales>
+                                </textFieldCell>
+                            </textField>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="dig-HT-lmC">
+                                <rect key="frame" x="188" y="67" width="75" height="32"/>
+                                <buttonCell key="cell" type="push" title="Button" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="9pD-7j-PwZ">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="startGameWithSender:" target="YY0-8h-dIt" id="QHt-ae-JJy"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="eAa-V6-hRw" firstAttribute="top" secondItem="4xv-fc-lSH" secondAttribute="bottom" constant="16" id="2o8-No-etg"/>
+                            <constraint firstItem="dig-HT-lmC" firstAttribute="centerX" secondItem="Fh9-UX-Kx6" secondAttribute="centerX" id="4JT-ht-XM4"/>
+                            <constraint firstItem="dig-HT-lmC" firstAttribute="top" secondItem="eAa-V6-hRw" secondAttribute="bottom" constant="22" id="IiE-N3-HNs"/>
+                            <constraint firstAttribute="trailing" secondItem="eAa-V6-hRw" secondAttribute="trailing" constant="20" symbolic="YES" id="aHU-EB-epU"/>
+                            <constraint firstItem="4xv-fc-lSH" firstAttribute="top" secondItem="Fh9-UX-Kx6" secondAttribute="top" constant="30" id="faP-5v-je1"/>
+                            <constraint firstItem="eAa-V6-hRw" firstAttribute="leading" secondItem="Fh9-UX-Kx6" secondAttribute="leading" constant="20" symbolic="YES" id="iPb-8z-p3h"/>
+                            <constraint firstItem="4xv-fc-lSH" firstAttribute="leading" secondItem="Fh9-UX-Kx6" secondAttribute="leading" constant="20" symbolic="YES" id="ka6-Y9-k9J"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="button" destination="dig-HT-lmC" id="gQs-jr-geg"/>
+                        <outlet property="inputTextField" destination="eAa-V6-hRw" id="emx-zG-UXF"/>
+                    </connections>
                 </viewController>
-                <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+                <customObject id="zkf-jv-BxU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="817"/>
+            <point key="canvasLocation" x="-333" y="827"/>
         </scene>
     </scenes>
 </document>

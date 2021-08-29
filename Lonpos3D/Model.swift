@@ -191,6 +191,7 @@ struct Piece {
 }
 
 struct Game {
+    static let notificationName = Notification.Name(rawValue: "lonpos")
     var space = Array(repeating: Character(" "), count: 55)
     static let pieceCandidates: [Piece] = [Piece.H, Piece.L, Piece.U, Piece.F, Piece.S, Piece.C, Piece.W, Piece.X, Piece.B, Piece.Z, Piece.O, Piece.Y]
     var usePieceIndexes = IndexSet()
@@ -374,7 +375,7 @@ struct Game {
         return Game.pieceCandidates.first{$0.identifier == id}
     }
     
-    private func checkError() {
+    private func checkError() -> String? {
         var map = [Character: [Int]]()
         for i in 0...54 {
             let char = space[i]
@@ -386,21 +387,19 @@ struct Game {
         }
         for (char, list) in map where char != " " {
             guard let piece = piece(with: char) else {
-                print("Unknown piece identifier '\(char)'")
-                exit(0)
+                return "Unknown piece identifier '\(char)'"
             }
             if list.count != piece.ballCount {
-                print("Piece '\(piece.identifier)' ball count is \(list.count), but should be \(piece.ballCount)")
+                return "Piece '\(piece.identifier)' ball count is \(list.count), but should be \(piece.ballCount)"
             }
             if !isSameZ(indexList: list) && !isSamePlaneVertically(indexList: list) {
-                print("Balls from piece '\(piece.identifier)' are not in same vertical plain, and not at same z level: ", list)
-                exit(0)
+                return "Balls from piece '\(piece.identifier)' are not in same vertical plain, and not at same z level: \(list)"
             }
             if !piece.isValidPoints(indexList: list) {
-                print("Distance from every 2 balls from piece '\(piece.identifier)' are not correct", list)
-                exit(0)
+                return "Distance from every 2 balls from piece '\(piece.identifier)' are not correct: \(list)"
             }
         }
+        return nil
     }
     
     private func pointList(from indexList: [Int]) -> [PointInt3D] {
@@ -413,7 +412,7 @@ struct Game {
         guard let firstPoint = mostDifficultPosition else {
             NSLog("Success")
             print(self)
-            NotificationQueue.default.enqueue(Notification(name: Notification.Name(rawValue: "lonpos"), object: self, userInfo: nil), postingStyle: .now)
+            NotificationQueue.default.enqueue(Notification(name: Game.notificationName, object: self, userInfo: nil), postingStyle: .now)
             return []
         }
         let firstIndex = firstPoint.index()
@@ -439,8 +438,7 @@ struct Game {
         return result
     }
     
-    static func start(_ strList: String...) {
-        var game = Game()
+    init(_ strList: [String]) throws {
         var usePieces = Set<Character>()
         for z in 0..<strList.count {
             var offset: Int
@@ -463,7 +461,7 @@ struct Game {
                 let str = strList[z]
                 let char = str[str.index(str.startIndex, offsetBy: i)]
                 if char != " " {
-                    game.space[offset + i] = char
+                    space[offset + i] = char
                     usePieces.insert(char)
                 }
             }
@@ -472,20 +470,20 @@ struct Game {
         for i in 0..<Game.pieceCandidates.count {
             let id = Game.pieceCandidates[i].identifier
             if usePieces.contains(id) {
-                game.usePieceIndexes.insert(i)
+                usePieceIndexes.insert(i)
             }
         }
-        game.checkError()
-        game.start()
+        if let msg = checkError() {
+            throw LonposError.inputError(msg)
+        }
     }
     
-    static func start(_ strInitialBoard: String) {
-        var game = Game()
+    init(_ strInitialBoard: String) throws {
         var usePieces = Set<Character>()
         for i in 0..<strInitialBoard.count {
             let char = strInitialBoard[strInitialBoard.index(strInitialBoard.startIndex, offsetBy: i)]
             if char != " " {
-                game.space[i] = char
+                space[i] = char
                 usePieces.insert(char)
             }
         }
@@ -493,15 +491,17 @@ struct Game {
         for i in 0..<Game.pieceCandidates.count {
             let id = Game.pieceCandidates[i].identifier
             if usePieces.contains(id) {
-                game.usePieceIndexes.insert(i)
+                usePieceIndexes.insert(i)
             }
         }
-        game.checkError()
-        game.start()
+        if let msg = checkError() {
+            throw LonposError.inputError(msg)
+        }
     }
     
     func start() {
         NSLog("Start")
+        var level = 1
         var list = [self]
         var nextList = [] as [Game]
         while !list.isEmpty {
@@ -510,8 +510,10 @@ struct Game {
             }
             list = nextList
             nextList = []
-            NSLog("%ld", list.count)
+            NSLog("%ld: %ld", level, list.count)
+            level += 1
         }
+        NotificationQueue.default.enqueue(Notification(name: Game.notificationName, object: nil, userInfo: nil), postingStyle: .now)
     }
 }
 
@@ -538,4 +540,8 @@ extension Int {
     func distance(from index: Int) -> Int {
         return Game.DistanceTable[self * 55 + index]
     }
+}
+
+enum LonposError: Error {
+    case inputError(String)
 }
