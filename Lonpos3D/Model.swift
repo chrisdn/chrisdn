@@ -10,7 +10,6 @@ import AppKit
 
 struct PointInt3D {
     var x, y, z: Int
-    static let sqrt2_2 = sqrtf(2) / 2
     
     func index(outOfBoundAllowed: Bool = false) -> Int {
         if z < 0 || z > 4 {return -1}
@@ -418,7 +417,7 @@ struct Game {
         let firstIndex = firstPoint.index()
         for i in 0..<Game.pieceCandidates.count where !usePieceIndexes.contains(i) {
             let piece = Game.pieceCandidates[i]
-            newGame.space[firstPoint.index()] = piece.identifier
+            newGame.space[firstIndex] = piece.identifier
             var indexList = [firstIndex]
             while newGame.getNextEmptyPointIndexList(list: &indexList, piece: piece) {
                 assert(indexList.count == piece.ballCount)
