@@ -293,16 +293,14 @@ struct Game {
         return nil
     }
     
-    private func isSameZ(pointList: [PointInt3D]) -> Bool {
-        var lastZ: Int?
-        for p in pointList {
-            if let lz = lastZ {
-                if lz != p.z {return false}
-            } else {
-                lastZ = p.z
-            }
+    private func isSameZ(indexList: [Int]) -> Bool {
+        let threshHoldList: [Int] = [25, 25 + 16, 25 + 16 + 9, 25 + 16 + 9 + 4]
+        var min: Int?
+        for threshHold in threshHoldList {
+            if (indexList.max() ?? 999) < threshHold  && (indexList.min() ?? -1) >= (min ?? 0) {return true}
+            min =  threshHold
         }
-        return true
+        return false
     }
     
     private func isSamePlaneVertically(indexList: [Int]) -> Bool {
@@ -372,23 +370,35 @@ struct Game {
         return true
     }
     
-    func checkError() {
-        var map = [Character: Int]()
+    private func piece(with id: Character) -> Piece? {
+        return Game.pieceCandidates.first{$0.identifier == id}
+    }
+    
+    private func checkError() {
+        var map = [Character: [Int]]()
         for i in 0...54 {
             let char = space[i]
-            if let n = map[char] {
-                map[char] = n + 1
+            if let list = map[char] {
+                map[char] = list + [i]
             } else {
-                map[char] = 1
+                map[char] = [i]
             }
         }
-        print(map)
-        for i in 0..<Game.pieceCandidates.count {
-            let piece = Game.pieceCandidates[i]
-            if usePieceIndexes.contains(i) {
-                assert(map[piece.identifier] == piece.ballCount, "piece \(piece.identifier) ball count is \(map[piece.identifier] ?? 0), but should be \(piece.ballCount)")
-            } else {
-                assert((map[piece.identifier] ?? 0) == 0, "Piece \(piece.identifier) not used, but board has at least one of its balls")
+        for (char, list) in map where char != " " {
+            guard let piece = piece(with: char) else {
+                print("Unknown piece identifier '\(char)'")
+                exit(0)
+            }
+            if list.count != piece.ballCount {
+                print("Piece '\(piece.identifier)' ball count is \(list.count), but should be \(piece.ballCount)")
+            }
+            if !isSameZ(indexList: list) && !isSamePlaneVertically(indexList: list) {
+                print("Balls from piece '\(piece.identifier)' are not in same vertical plain, and not at same z level: ", list)
+                exit(0)
+            }
+            if !piece.isValidPoints(indexList: list) {
+                print("Distance from every 2 balls from piece '\(piece.identifier)' are not correct", list)
+                exit(0)
             }
         }
     }
@@ -415,8 +425,7 @@ struct Game {
                 assert(indexList.count == piece.ballCount)
                 
                 //check if all points belong to a same plane
-                let pointList = pointList(from: indexList)
-                if (isSameZ(pointList: pointList) || isSamePlaneVertically(indexList: indexList))
+                if (isSameZ(indexList: indexList) || isSamePlaneVertically(indexList: indexList))
                     && piece.isValidPoints(indexList: indexList)
                 {
                     newGame.usePieceIndexes.insert(i)
@@ -428,6 +437,46 @@ struct Game {
             }
         }
         return result
+    }
+    
+    static func start(_ strList: String...) {
+        var game = Game()
+        var usePieces = Set<Character>()
+        for z in 0..<strList.count {
+            var offset: Int
+            switch z {
+            case 0:
+                offset = 0
+            case 1:
+                offset = 25
+            case 2:
+                offset = 25 + 16
+            case 3:
+                offset = 25 + 16 + 9
+            case 4:
+                offset = 25 + 16 + 9 + 4
+            default:
+                print("Incorrect game input parameter", strList)
+                exit(0)
+            }
+            for i in 0..<strList[z].count {
+                let str = strList[z]
+                let char = str[str.index(str.startIndex, offsetBy: i)]
+                if char != " " {
+                    game.space[offset + i] = char
+                    usePieces.insert(char)
+                }
+            }
+        }
+        
+        for i in 0..<Game.pieceCandidates.count {
+            let id = Game.pieceCandidates[i].identifier
+            if usePieces.contains(id) {
+                game.usePieceIndexes.insert(i)
+            }
+        }
+        game.checkError()
+        game.start()
     }
     
     static func start(_ strInitialBoard: String) {

@@ -117,7 +117,8 @@ class GameViewController: NSViewController {
         queue.async {
 //            Game.start("BBFFFBBWSFBWWSFWWYSSYYYYS")
 //            Game.start("UU  SU   SU  SSU  S")
-            Game.start("FFFY FYYYYF")
+//            Game.start("FFFY FYYYYF")
+            Game.start("B    CBC  CCC", "B    B", "B")
         }
         
         let view = NSView()
