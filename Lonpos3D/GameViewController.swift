@@ -15,7 +15,7 @@ class GameViewController: NSViewController {
     @IBOutlet var checkbox: NSButton!
     let queue = DispatchQueue(label: "lonpos_queue")
     
-    private func showGame(game: Game) {
+    private func showGame(game: Game3d) {
         let scnView = SCNView()
         let scene = createScene(scnView: scnView)
         scnView.scene = scene
@@ -134,7 +134,7 @@ class GameViewController: NSViewController {
                 }
             } else if checkbox.state == .on {
                 let strList = str.split(separator: ",").map {String($0)}
-                let game = strList.count > 1 ? try Game(strList) : try Game(str)
+                let game = strList.count > 1 ? try Game3d(strList) : try Game3d(str)
                 button.isEnabled = false
                 view.addSubview(inputTextField, positioned: .below, relativeTo: button)
                 queue.async {
@@ -160,7 +160,7 @@ class GameViewController: NSViewController {
             if note.object == nil {
                 self.button.isEnabled = true
                 self.checkbox.isEnabled = true
-            } else if let game = note.object as? Game {
+            } else if let game = note.object as? Game3d {
                 self.showGame(game: game)
             } else if let game = note.object as? Game2d {
                 self.inputTextField.stringValue = self.inputTextField.stringValue + "\n" + game.description

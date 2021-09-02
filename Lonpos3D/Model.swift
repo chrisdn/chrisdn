@@ -190,10 +190,21 @@ struct Piece {
     }
 }
 
+enum LonposError: Error {
+    case inputError(String)
+}
+
 struct Game {
     static let notificationName = Notification.Name(rawValue: "lonpos")
-    var space = Array(repeating: Character(" "), count: 55)
     static let pieceCandidates: [Piece] = [Piece.H, Piece.L, Piece.U, Piece.F, Piece.S, Piece.C, Piece.W, Piece.X, Piece.B, Piece.Z, Piece.O, Piece.Y]
+    
+    static func piece(with id: Character) -> Piece? {
+        return Game.pieceCandidates.first{$0.identifier == id}
+    }
+}
+
+struct Game3d {
+    var space = Array(repeating: Character(" "), count: 55)
     var usePieceIndexes = IndexSet()
     static var DistanceTable: [Int] = {
         guard let path = Bundle.main.path(forResource: "lonpos3d_distance", ofType: "plist") else {abort()}
@@ -202,7 +213,7 @@ struct Game {
     }()
     
     static private func distance(from: Int, to: Int) -> Int {
-        return Game.DistanceTable[from * 55 + to]
+        return Game3d.DistanceTable[from * 55 + to]
     }
     
     private var mostDifficultPosition: PointInt3D? {
@@ -356,7 +367,7 @@ struct Game {
             //make sure piece maxLength is complied
             var complied = true
             for i in list {
-                if Game.distance(from: index, to: i) > piece.maxLength {
+                if Game3d.distance(from: index, to: i) > piece.maxLength {
                     complied = false
                     break
                 }
@@ -368,10 +379,6 @@ struct Game {
             lastIndex = index
         }
         return true
-    }
-    
-    static func piece(with id: Character) -> Piece? {
-        return Game.pieceCandidates.first{$0.identifier == id}
     }
     
     private func checkError() -> String? {
@@ -394,15 +401,15 @@ struct Game {
             if !isSameZ(indexList: list) && !isSamePlaneVertically(indexList: list) {
                 return "Balls from piece '\(piece.identifier)' are not in same vertical plain, and not at same z level: \(list)"
             }
-            if !piece.isValidPoints(indexList: list, distanceTable: Game.DistanceTable) {
+            if !piece.isValidPoints(indexList: list, distanceTable: Game3d.DistanceTable) {
                 return "Distance from every 2 balls from piece '\(piece.identifier)' are not correct: \(list)"
             }
         }
         return nil
     }
     
-    private func spawnFromNextPoint() -> [Game] {
-        var result = [] as [Game]
+    private func spawnFromNextPoint() -> [Self] {
+        var result = [] as [Game3d]
         guard let firstPoint = mostDifficultPosition else {
             NSLog("Success")
             print(self)
@@ -420,7 +427,7 @@ struct Game {
                 
                 //check if all points belong to a same plane
                 if (isSameZ(indexList: indexList) || isSamePlaneVertically(indexList: indexList))
-                    && piece.isValidPoints(indexList: indexList, distanceTable: Game.DistanceTable)
+                    && piece.isValidPoints(indexList: indexList, distanceTable: Game3d.DistanceTable)
                 {
                     newGame.usePieceIndexes.insert(i)
                     result.append(newGame)
@@ -495,7 +502,7 @@ struct Game {
         NSLog("Start")
         var level = 1
         var list = [self]
-        var nextList = [] as [Game]
+        var nextList = [] as [Game3d]
         while !list.isEmpty {
             for game in list {
                 nextList.append(contentsOf: game.spawnFromNextPoint())
@@ -509,7 +516,7 @@ struct Game {
     }
 }
 
-extension Game: CustomDebugStringConvertible {
+extension Game3d: CustomDebugStringConvertible {
     var debugDescription: String {
         var stringList = Array(repeating: "", count: 5)
         for z in 0...4 {
@@ -526,14 +533,4 @@ extension Game: CustomDebugStringConvertible {
         })
         return numberSum
     }
-}
-
-extension Int {
-    func distance(from index: Int) -> Int {
-        return Game.DistanceTable[self * 55 + index]
-    }
-}
-
-enum LonposError: Error {
-    case inputError(String)
 }

@@ -163,7 +163,7 @@ struct Game2d {
         return nil
     }
     
-    private func spawnFromNextPoint() -> [Game2d] {
+    private func spawnFromNextPoint() -> [Self] {
         var result = [] as [Game2d]
         guard let firstIndex = mostDifficultIndex() else {
             NSLog("Success")
