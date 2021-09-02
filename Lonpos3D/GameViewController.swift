@@ -12,6 +12,8 @@ class GameViewController: NSViewController {
     private var sceneList = [] as [SCNView]
     @IBOutlet var inputTextField: NSTextField!
     @IBOutlet var button: NSButton!
+    @IBOutlet var checkbox: NSButton!
+    let queue = DispatchQueue(label: "lonpos_queue")
     
     private func showGame(game: Game) {
         let scnView = SCNView()
@@ -114,7 +116,6 @@ class GameViewController: NSViewController {
     
     @IBAction func startGame(sender: NSControl) {
         let str = inputTextField.stringValue.uppercased().replacingOccurrences(of: ".", with: " ")
-        let strList = str.split(separator: ",").map {String($0)}
         /*
          "BBFFFBBWSFBWWSFWWYSSYYYYS"
          "UU  SU   SU  SSU  S"
@@ -124,12 +125,21 @@ class GameViewController: NSViewController {
          "B    CBC  CCC,B    B,B"
          */
         do {
-            let game = strList.count > 1 ? try Game(strList) : try Game(str)
-            button.isEnabled = false
-            view.addSubview(inputTextField, positioned: .below, relativeTo: button)
-            let queue = DispatchQueue(label: "lonpos_queue")
-            queue.async {
-                game.start()
+            if checkbox.state == .off {
+                let game = try Game2d(str)
+                button.isEnabled = false
+                checkbox.isEnabled = false
+                queue.async {
+                    game.start()
+                }
+            } else if checkbox.state == .on {
+                let strList = str.split(separator: ",").map {String($0)}
+                let game = strList.count > 1 ? try Game(strList) : try Game(str)
+                button.isEnabled = false
+                view.addSubview(inputTextField, positioned: .below, relativeTo: button)
+                queue.async {
+                    game.start()
+                }
             }
         } catch LonposError.inputError(let msg){
             //show error to user
@@ -147,12 +157,26 @@ class GameViewController: NSViewController {
         super.viewDidLoad()
         
         NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: "lonpos"), object: nil, queue: OperationQueue.main) { note in
-            if let game = note.object as? Game {
-                self.showGame(game: game)
-            } else {
+            if note.object == nil {
                 self.button.isEnabled = true
+                self.checkbox.isEnabled = true
+            } else if let game = note.object as? Game {
+                self.showGame(game: game)
+            } else if let game = note.object as? Game2d {
+                self.inputTextField.stringValue = self.inputTextField.stringValue + "\n" + game.description
             }
         }
+        
+//        do {
+//            let game = try Game2d("sss.s..s")
+//            DispatchQueue.global(qos: .background).async {
+//                game.start()
+//            }
+//        } catch LonposError.inputError(let msg) {
+//            print(msg)
+//        } catch {
+//            print(error)
+//        }
     }
     
     override func viewDidAppear() {

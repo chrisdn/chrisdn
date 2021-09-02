@@ -732,8 +732,8 @@
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="dig-HT-lmC">
-                                <rect key="frame" x="188" y="67" width="75" height="32"/>
-                                <buttonCell key="cell" type="push" title="Button" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="9pD-7j-PwZ">
+                                <rect key="frame" x="193" y="67" width="64" height="32"/>
+                                <buttonCell key="cell" type="push" title="Start" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="9pD-7j-PwZ">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -741,12 +741,21 @@
                                     <action selector="startGameWithSender:" target="YY0-8h-dIt" id="QHt-ae-JJy"/>
                                 </connections>
                             </button>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="9qV-Vw-GyN">
+                                <rect key="frame" x="149" y="253" width="97" height="18"/>
+                                <buttonCell key="cell" type="check" title="3D Pyramid" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="zKF-nY-hAB">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstItem="eAa-V6-hRw" firstAttribute="top" secondItem="4xv-fc-lSH" secondAttribute="bottom" constant="16" id="2o8-No-etg"/>
                             <constraint firstItem="dig-HT-lmC" firstAttribute="centerX" secondItem="Fh9-UX-Kx6" secondAttribute="centerX" id="4JT-ht-XM4"/>
                             <constraint firstItem="dig-HT-lmC" firstAttribute="top" secondItem="eAa-V6-hRw" secondAttribute="bottom" constant="22" id="IiE-N3-HNs"/>
                             <constraint firstAttribute="trailing" secondItem="eAa-V6-hRw" secondAttribute="trailing" constant="20" symbolic="YES" id="aHU-EB-epU"/>
+                            <constraint firstItem="9qV-Vw-GyN" firstAttribute="centerY" secondItem="4xv-fc-lSH" secondAttribute="centerY" id="bK1-IM-RXa"/>
+                            <constraint firstItem="9qV-Vw-GyN" firstAttribute="leading" secondItem="4xv-fc-lSH" secondAttribute="trailing" constant="48" id="bSM-QK-f8o"/>
                             <constraint firstItem="4xv-fc-lSH" firstAttribute="top" secondItem="Fh9-UX-Kx6" secondAttribute="top" constant="30" id="faP-5v-je1"/>
                             <constraint firstItem="eAa-V6-hRw" firstAttribute="leading" secondItem="Fh9-UX-Kx6" secondAttribute="leading" constant="20" symbolic="YES" id="iPb-8z-p3h"/>
                             <constraint firstItem="4xv-fc-lSH" firstAttribute="leading" secondItem="Fh9-UX-Kx6" secondAttribute="leading" constant="20" symbolic="YES" id="ka6-Y9-k9J"/>
@@ -754,6 +763,7 @@
                     </view>
                     <connections>
                         <outlet property="button" destination="dig-HT-lmC" id="gQs-jr-geg"/>
+                        <outlet property="checkbox" destination="9qV-Vw-GyN" id="vBI-ig-hwx"/>
                         <outlet property="inputTextField" destination="eAa-V6-hRw" id="emx-zG-UXF"/>
                     </connections>
                 </viewController>

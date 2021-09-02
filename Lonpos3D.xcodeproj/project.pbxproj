@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C50FEEC26E078C700C2EC9B /* lonpos2d_distance.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C50FEEB26E078C700C2EC9B /* lonpos2d_distance.plist */; };
+		4C50FEEE26E079A400C2EC9B /* lonpos3d_distance.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C50FEED26E079A400C2EC9B /* lonpos3d_distance.plist */; };
+		4C7A119026DC216E008B5E47 /* Model2D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C7A118F26DC216E008B5E47 /* Model2D.swift */; };
 		4CA5272726D30A9200924FEF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA5272626D30A9200924FEF /* AppDelegate.swift */; };
 		4CA5272926D30A9200924FEF /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA5272826D30A9200924FEF /* GameViewController.swift */; };
 		4CA5272D26D30A9200924FEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4CA5272C26D30A9200924FEF /* Assets.xcassets */; };
@@ -26,6 +29,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4C50FEEB26E078C700C2EC9B /* lonpos2d_distance.plist */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = lonpos2d_distance.plist; sourceTree = "<group>"; };
+		4C50FEED26E079A400C2EC9B /* lonpos3d_distance.plist */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = lonpos3d_distance.plist; sourceTree = "<group>"; };
+		4C7A118F26DC216E008B5E47 /* Model2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model2D.swift; sourceTree = "<group>"; };
 		4CA5272326D30A9200924FEF /* Lonpos3D.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lonpos3D.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CA5272626D30A9200924FEF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4CA5272826D30A9200924FEF /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
@@ -80,6 +86,9 @@
 				4CA5272826D30A9200924FEF /* GameViewController.swift */,
 				4CA5272C26D30A9200924FEF /* Assets.xcassets */,
 				4CA5272E26D30A9200924FEF /* Main.storyboard */,
+				4C7A118F26DC216E008B5E47 /* Model2D.swift */,
+				4C50FEEB26E078C700C2EC9B /* lonpos2d_distance.plist */,
+				4C50FEED26E079A400C2EC9B /* lonpos3d_distance.plist */,
 			);
 			path = Lonpos3D;
 			sourceTree = "<group>";
@@ -174,7 +183,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				4CA5273026D30A9200924FEF /* Main.storyboard in Resources */,
+				4C50FEEE26E079A400C2EC9B /* lonpos3d_distance.plist in Resources */,
 				4CA5272D26D30A9200924FEF /* Assets.xcassets in Resources */,
+				4C50FEEC26E078C700C2EC9B /* lonpos2d_distance.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -195,6 +206,7 @@
 				4CB41B0926D6C953008B95AD /* Model.swift in Sources */,
 				4CA5272926D30A9200924FEF /* GameViewController.swift in Sources */,
 				4CA5272726D30A9200924FEF /* AppDelegate.swift in Sources */,
+				4C7A119026DC216E008B5E47 /* Model2D.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
