@@ -22,9 +22,9 @@ struct Point2d {
     }
 }
 
-struct Game2d {
-    private var space = Array(repeating: Character(" "), count: 55)
-    private var usePieceIndexes = IndexSet()
+struct Game2d: IGame {
+    var space = Array(repeating: Character(" "), count: 55)
+    var usePieceIndexes = IndexSet()
     
     init(_ rawString: String) throws {
         var usePieces = Set<Character>()
@@ -96,7 +96,7 @@ struct Game2d {
         abort()
     }
     
-    static private var DistanceTable: [Int] = {
+    static var DistanceTable: [Int] = {
         guard let path = Bundle.main.path(forResource: "lonpos2d_distance", ofType: "plist") else {abort()}
         guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else {abort()}
         return (try? PropertyListDecoder().decode([Int].self, from: data)) ?? []
@@ -114,7 +114,11 @@ struct Game2d {
         return nil
     }
     
-    private mutating func getNextEmptyPointIndexList(list: inout [Int], piece: Piece) -> Bool {
+    func isValidList(list: [Int]) -> Bool {
+        return true
+    }
+    
+    mutating func getNextEmptyPointIndexList(list: inout [Int], piece: Piece) -> Bool {
         var lastIndex = -1
         if list.count == piece.ballCount {
             let li = list.removeLast()
@@ -154,59 +158,13 @@ struct Game2d {
         return true
     }
     
-    private func mostDifficultIndex() -> Int? {
+    var mostDifficultIndex: Int? {
         for i in 0...54 {
             if space[i] == " " {
                 return i
             }
         }
         return nil
-    }
-    
-    private func spawnFromNextPoint() -> [Self] {
-        var result = [] as [Game2d]
-        guard let firstIndex = mostDifficultIndex() else {
-            NSLog("Success")
-            print(self)
-            NotificationQueue.default.enqueue(Notification(name: Game.notificationName, object: self, userInfo: nil), postingStyle: .now)
-            return []
-        }
-        var newGame = self
-        for i in 0..<Game.pieceCandidates.count where !usePieceIndexes.contains(i) {
-            let piece = Game.pieceCandidates[i]
-            newGame.space[firstIndex] = piece.identifier
-            var indexList = [firstIndex]
-            while newGame.getNextEmptyPointIndexList(list: &indexList, piece: piece) {
-                assert(indexList.count == piece.ballCount)
-                
-                //check if all points belong to a same plane
-                if piece.isValidPoints(indexList: indexList, distanceTable: Game2d.DistanceTable)
-                {
-                    newGame.usePieceIndexes.insert(i)
-                    result.append(newGame)
-                    newGame.usePieceIndexes.remove(i)
-                }
-            }
-        }
-        return result
-    }
-    
-    func start() {
-        NSLog("Start")
-        var level = 1
-        var list = [self]
-        var nextList = [] as [Game2d]
-        while !list.isEmpty {
-            for game in list {
-                nextList.append(contentsOf: game.spawnFromNextPoint())
-            }
-            list = nextList
-            nextList = []
-            NSLog("%ld: %ld", level, list.count)
-            level += 1
-        }
-        print("game2d done")
-        NotificationQueue.default.enqueue(Notification(name: Game.notificationName, object: nil, userInfo: nil), postingStyle: .now)
     }
 }
 
