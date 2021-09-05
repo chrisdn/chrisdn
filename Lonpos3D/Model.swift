@@ -32,23 +32,6 @@ struct PointInt3D {
             abort()
         }
     }
-    
-    static func point(from index: Int) -> PointInt3D {
-        switch index {
-        case 0..<25:
-            return PointInt3D(x: index % 5, y: index / 5, z: 0)
-        case 25..<41:
-            return PointInt3D(x: (index - 25) % 4, y: (index - 25) / 4, z: 1)
-        case 41..<50:
-            return PointInt3D(x: (index - 41) % 3, y: (index - 41) / 3, z: 2)
-        case 50...53:
-            return PointInt3D(x: (index - 50) % 2, y: (index - 50) / 2, z: 3)
-        case 54:
-            return PointInt3D(x: 0, y: 0, z: 4)
-        default:
-            abort()
-        }
-    }
 }
 
 extension PointInt3D: CustomDebugStringConvertible {
@@ -201,6 +184,7 @@ protocol IGame {
     static var DistanceTable: [Int] {get}
     func isValidList(list: [Int]) -> Bool
     mutating func getNextEmptyPointIndexList(list: inout [Int], piece: Piece) -> Bool
+    func point3d(from index: Int) -> PointInt3D
 }
 
 extension IGame {

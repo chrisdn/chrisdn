@@ -18,7 +18,26 @@ struct Point2d {
         for i in 1...y {
             total += i
         }
+        if total + x < 0 || total + x > 54 {
+            abort()
+        }
         return total + x
+    }
+    
+    var leftPoint: Point2d {
+        return Point2d(x: x - 1, y: y)
+    }
+    
+    var rightPoint: Point2d {
+        return Point2d(x: x + 1, y: y)
+    }
+    
+    var topPoint: Point2d {
+        return Point2d(x: x, y: y - 1)
+    }
+    
+    var bottomPoint: Point2d {
+        return Point2d(x: x, y: y + 1)
     }
 }
 
@@ -31,7 +50,7 @@ struct Game2d: IGame {
         let string = rawString.uppercased().replacingOccurrences(of: ".", with: " ")
         if string.contains(",") {
             var line = 0
-            for str in string.split(separator: ",") {
+            for str in string.split(separator: ",", omittingEmptySubsequences: false) {
                 assert(str.count <= line + 1)
                 for col in 0..<str.count {
                     let char = str[str.index(str.startIndex, offsetBy: col)]
@@ -94,6 +113,11 @@ struct Game2d: IGame {
             }
         }
         abort()
+    }
+    
+    func point3d(from index: Int) -> PointInt3D {
+        let p2d = Game2d.rowColumn(index: index)
+        return PointInt3D(x: p2d.x, y: p2d.y, z: 0)
     }
     
     static var DistanceTable: [Int] = {
@@ -159,12 +183,38 @@ struct Game2d: IGame {
     }
     
     var mostDifficultIndex: Int? {
-        for i in 0...54 {
-            if space[i] == " " {
-                return i
+        var max = -1
+        var result: Int?
+        for i in 0...54 where space[i] == " " {
+            var level = 0
+            let p = Game2d.rowColumn(index: i)
+            if p.x == 0 {
+                level += 1
+            } else if space[p.leftPoint.index] != " " {
+                level += 1
+            }
+            if p.x == p.y || p.x + 1 > p.y {
+                level += 1
+            } else if space[p.rightPoint.index] != " " {
+                level += 1
+            }
+            if p.y == 0 || p.x > p.y - 1 {
+                level += 1
+            } else if space[p.topPoint.index] != " " {
+                level += 1
+            }
+            if p.y == 9 {
+                level += 1
+            } else if space[p.bottomPoint.index] != " " {
+                level += 1
+            }
+            
+            if level > max {
+                max = level
+                result = i
             }
         }
-        return nil
+        return result
     }
 }
 

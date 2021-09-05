@@ -15,13 +15,14 @@ class GameViewController: NSViewController {
     @IBOutlet var checkbox: NSButton!
     let queue = DispatchQueue(label: "lonpos_queue")
     
-    private func showGame(game: Game3d) {
+    private func showGame(game: IGame) {
+        guard sceneList.count < 18 else {return}
         let scnView = SCNView()
         let scene = createScene(scnView: scnView)
         scnView.scene = scene
         let pyramiad = SCNNode()
         for index in 0...54 {
-            let p = PointInt3D.point(from: index)
+            let p = game.point3d(from: index)
             let char = game.space[index]
             guard let piece = Game.pieceCandidates.first(where: {$0.identifier == char}) else {abort()}
             let ball = SCNSphere(radius: 0.5)
@@ -30,9 +31,9 @@ class GameViewController: NSViewController {
             let pos = SCNVector3(Float(p.z) / 2 + Float(p.x) - 2, Float(p.z) * sqrtf(2) / 2, Float(p.z) / 2 + Float(p.y) - 2)
             node.position = pos
             pyramiad.addChildNode(node)
-            let action = SCNAction.moveBy(x: pos.x, y: pos.y, z: pos.z, duration: 5)
-            let a = SCNAction.sequence([action, action.reversed()])
-            node.runAction(SCNAction.repeatForever(a))
+//            let action = SCNAction.moveBy(x: pos.x, y: pos.y, z: pos.z, duration: 5)
+//            let a = SCNAction.sequence([action, action.reversed()])
+//            node.runAction(SCNAction.repeatForever(a))
         }
         
         scene.rootNode.addChildNode(pyramiad)
@@ -133,7 +134,7 @@ class GameViewController: NSViewController {
                     game.start()
                 }
             } else if checkbox.state == .on {
-                let strList = str.split(separator: ",").map {String($0)}
+                let strList = str.split(separator: ",", omittingEmptySubsequences: false).map {String($0)}
                 let game = strList.count > 1 ? try Game3d(strList) : try Game3d(str)
                 button.isEnabled = false
                 view.addSubview(inputTextField, positioned: .below, relativeTo: button)
@@ -160,10 +161,8 @@ class GameViewController: NSViewController {
             if note.object == nil {
                 self.button.isEnabled = true
                 self.checkbox.isEnabled = true
-            } else if let game = note.object as? Game3d {
+            } else if let game = note.object as? IGame {
                 self.showGame(game: game)
-            } else if let game = note.object as? Game2d {
-                self.inputTextField.stringValue = self.inputTextField.stringValue + "\n" + game.description
             }
         }
         

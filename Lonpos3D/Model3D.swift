@@ -91,6 +91,23 @@ struct Game3d: IGame {
         return savePos
     }
     
+    func point3d(from index: Int) -> PointInt3D {
+        switch index {
+        case 0..<25:
+            return PointInt3D(x: index % 5, y: index / 5, z: 0)
+        case 25..<41:
+            return PointInt3D(x: (index - 25) % 4, y: (index - 25) / 4, z: 1)
+        case 41..<50:
+            return PointInt3D(x: (index - 41) % 3, y: (index - 41) / 3, z: 2)
+        case 50...53:
+            return PointInt3D(x: (index - 50) % 2, y: (index - 50) / 2, z: 3)
+        case 54:
+            return PointInt3D(x: 0, y: 0, z: 4)
+        default:
+            abort()
+        }
+    }
+    
     private func nextEmptyIndex(from lastIndex: Int?) -> Int? {
         if let li = lastIndex, li >= 54 {return nil}
         for i in ((lastIndex ?? -1) + 1)...54 where space[i] == " " {
@@ -103,7 +120,7 @@ struct Game3d: IGame {
         let lastIndex = lastPoint?.index()
         let pnextIndex = nextEmptyIndex(from: lastIndex)
         if let nextIndex = pnextIndex {
-            return PointInt3D.point(from: nextIndex)
+            return point3d(from: nextIndex)
         }
         return nil
     }
@@ -128,7 +145,7 @@ struct Game3d: IGame {
         var hasMultiplePlusValue = false
         var hasMultpleMinusValue = false
         for index in indexList {
-            let p = PointInt3D.point(from: index)
+            let p = point3d(from: index)
             let plus = p.x + p.y + p.z
             let minus = p.x - p.y
             if let pv = plusValue, let mv = minusValue {
