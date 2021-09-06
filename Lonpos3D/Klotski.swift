@@ -45,6 +45,7 @@ struct Klotski {
             let char = string[index]
             board.append(contentsOf: String(char))
         }
+        checkError()
     }
     
     func rowCol(index: Int) -> Point2d {
@@ -306,19 +307,23 @@ struct Klotski {
             switch board[i] {
             case "H":
                 if i % 4 == 3 || board[i + 1] != "h" {
+                    print(self)
                     abort()
                 }
             case "V":
-                if i >= 20 || board[i + 4] != "v" {
+                if i >= 16 || board[i + 4] != "v" {
+                    print(self)
                     abort()
                 }
             case "S":
                 if i > 20 || i % 4 == 3 || board[i + 1] != "s" || board[i + 4] != "Q" || board[i + 5] != "q" {
+                    print(self)
                     abort()
                 }
             case "h", "v", "s", "Q", "q", "P":
                 break
             default:
+                print(self)
                 print("Unknown piece in board:", board[i])
                 abort()
             }
