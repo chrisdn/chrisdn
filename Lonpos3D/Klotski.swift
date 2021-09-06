@@ -269,7 +269,7 @@ struct Klotski {
     func start() {
         var level = 0
         var hashSet = Set<Int>()
-        hashSet.insert(self.hashValue)
+        hashSet.insert(board.hashValue)
         var list = [self]
         var nextList = [Self]()
         repeat {
@@ -277,7 +277,7 @@ struct Klotski {
             for game in list {
                 if game.isSuccess {
                     print("success")
-                    print(self)
+                    print(game)
                     return
                 }
                 let spawnList = game.spawn()
@@ -323,16 +323,6 @@ struct Klotski {
                 abort()
             }
         }
-    }
-}
-
-extension Klotski: Hashable {
-    static func == (lhs: Klotski, rhs: Klotski) -> Bool {
-        return lhs.board == rhs.board
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(board)
     }
 }
 
