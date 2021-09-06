@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C2FD7B826E42D310099683C /* Klotski.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C2FD7B726E42D310099683C /* Klotski.swift */; };
 		4C50FEEC26E078C700C2EC9B /* lonpos2d_distance.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C50FEEB26E078C700C2EC9B /* lonpos2d_distance.plist */; };
 		4C50FEEE26E079A400C2EC9B /* lonpos3d_distance.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C50FEED26E079A400C2EC9B /* lonpos3d_distance.plist */; };
 		4C6D498A26E11FA3008777D9 /* Model3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6D498926E11FA3008777D9 /* Model3D.swift */; };
@@ -30,6 +31,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4C2FD7B726E42D310099683C /* Klotski.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Klotski.swift; sourceTree = "<group>"; };
 		4C50FEEB26E078C700C2EC9B /* lonpos2d_distance.plist */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = lonpos2d_distance.plist; sourceTree = "<group>"; };
 		4C50FEED26E079A400C2EC9B /* lonpos3d_distance.plist */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = lonpos3d_distance.plist; sourceTree = "<group>"; };
 		4C6D498926E11FA3008777D9 /* Model3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model3D.swift; sourceTree = "<group>"; };
@@ -92,6 +94,7 @@
 				4C50FEEB26E078C700C2EC9B /* lonpos2d_distance.plist */,
 				4C50FEED26E079A400C2EC9B /* lonpos3d_distance.plist */,
 				4C6D498926E11FA3008777D9 /* Model3D.swift */,
+				4C2FD7B726E42D310099683C /* Klotski.swift */,
 			);
 			path = Lonpos3D;
 			sourceTree = "<group>";
@@ -207,6 +210,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4CB41B0926D6C953008B95AD /* Model.swift in Sources */,
+				4C2FD7B826E42D310099683C /* Klotski.swift in Sources */,
 				4CA5272926D30A9200924FEF /* GameViewController.swift in Sources */,
 				4CA5272726D30A9200924FEF /* AppDelegate.swift in Sources */,
 				4C6D498A26E11FA3008777D9 /* Model3D.swift in Sources */,
