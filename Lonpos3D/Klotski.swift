@@ -282,8 +282,9 @@ struct Klotski {
                 }
                 let spawnList = game.spawn()
                 for g in spawnList {
-                    let hash = g.hashValue
+                    let hash = g.board.hashValue
                     if !hashSet.contains(hash) {
+                        hashSet.insert(hash)
                         nextList.append(g)
                     }
                 }
