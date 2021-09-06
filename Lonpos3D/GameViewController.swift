@@ -10,9 +10,11 @@ import QuartzCore
 
 class GameViewController: NSViewController {
     private var sceneList = [] as [SCNView]
-    @IBOutlet var inputTextField: NSTextField!
+    @IBOutlet var inputTextField: NSTextView!
     @IBOutlet var button: NSButton!
-    @IBOutlet var checkbox: NSButton!
+    @IBOutlet var btnLonpos3d: NSButton!
+    @IBOutlet var btnLonpos2d: NSButton!
+    @IBOutlet var btnKlotski: NSButton!
     let queue = DispatchQueue(label: "lonpos_queue")
     
     private func showGame(game: IGame) {
@@ -115,8 +117,13 @@ class GameViewController: NSViewController {
         return scene
     }
     
+    @IBAction func radioButtonTyped(button: NSButton) {
+        print(button.title)
+    }
+    
     @IBAction func startGame(sender: NSControl) {
-        let str = inputTextField.stringValue.uppercased().replacingOccurrences(of: ".", with: " ")
+        let str = inputTextField.string
+        UserDefaults.standard.setValue(str, forKey: "last_input")
         /*
          "BBFFFBBWSFBWWSFWWYSSYYYYS"
          "UU  SU   SU  SSU  S"
@@ -126,56 +133,77 @@ class GameViewController: NSViewController {
          "B    CBC  CCC,B    B,B"
          */
         do {
-            if checkbox.state == .off {
-                let game = try Game2d(str)
+            if btnLonpos2d.state == .on {
+                UserDefaults.standard.setValue(2, forKey: "last_game_type")
+                let game = try Game2d(str.uppercased().replacingOccurrences(of: ".", with: " "))
                 button.isEnabled = false
-                checkbox.isEnabled = false
                 queue.async {
                     game.start()
                 }
-            } else if checkbox.state == .on {
-                let strList = str.split(separator: ",", omittingEmptySubsequences: false).map {String($0)}
-                let game = strList.count > 1 ? try Game3d(strList) : try Game3d(str)
+            } else if btnLonpos3d.state == .on {
+                UserDefaults.standard.setValue(1, forKey: "last_game_type")
+                let strList = str.uppercased().replacingOccurrences(of: ".", with: " ").split(separator: ",", omittingEmptySubsequences: false).map {String($0)}
+                let game = strList.count > 1 ? try Game3d(strList) : try Game3d(str.uppercased().replacingOccurrences(of: ".", with: " "))
                 button.isEnabled = false
-                view.addSubview(inputTextField, positioned: .below, relativeTo: button)
                 queue.async {
                     game.start()
                 }
+            } else if btnKlotski.state == .on {
+                UserDefaults.standard.setValue(3, forKey: "last_game_type")
+                let game = Klotski(str.replacingOccurrences(of: ".", with: " "))
+                queue.async {
+                    game.start()
+                }
+            } else {
+                showAlert(message: "Please select a game type")
             }
         } catch LonposError.inputError(let msg){
-            //show error to user
-            let alert = NSAlert()
-            alert.messageText = msg
-            alert.alertStyle = .informational
-            alert.addButton(withTitle: "OK")
-            alert.runModal()
+            showAlert(message: msg)
         } catch {
             print(error)
         }
+        UserDefaults.standard.synchronize()
+    }
+    
+    private func showAlert(message: String) {
+        let alert = NSAlert()
+        alert.messageText = message
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: "lonpos"), object: nil, queue: OperationQueue.main) { note in
-            if note.object == nil {
-                self.button.isEnabled = true
-                self.checkbox.isEnabled = true
-            } else if let game = note.object as? IGame {
-                self.showGame(game: game)
-            }
+        if let input = UserDefaults.standard.string(forKey: "last_input") {
+            inputTextField.string = input
+        }
+        let type = UserDefaults.standard.integer(forKey: "last_game_type")
+        switch type {
+        case 1:
+            btnLonpos3d.state = .on
+        case 2:
+            btnLonpos2d.state = .on
+        case 3:
+            btnKlotski.state = .on
+        default:
+            break
         }
         
-//        do {
-//            let game = try Game2d("sss.s..s")
-//            DispatchQueue.global(qos: .background).async {
-//                game.start()
-//            }
-//        } catch LonposError.inputError(let msg) {
-//            print(msg)
-//        } catch {
-//            print(error)
-//        }
+        NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: "lonpos"), object: nil, queue: OperationQueue.main) { note in
+            guard let game = note.object else {
+                self.button.isEnabled = true
+                return
+            }
+            switch game {
+            case let g as IGame:
+                self.showGame(game: g)
+            case let g as Klotski:
+                self.inputTextField.string = g.steps.description
+            default:
+                break
+            }
+        }
     }
     
     override func viewDidAppear() {
