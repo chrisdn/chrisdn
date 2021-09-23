@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19158" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19162" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19158"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19162"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -719,43 +719,13 @@
                                     <action selector="startGameWithSender:" target="YY0-8h-dIt" id="QHt-ae-JJy"/>
                                 </connections>
                             </button>
-                            <button verticalHuggingPriority="750" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="bCm-g3-M4v">
-                                <rect key="frame" x="18" y="84" width="92" height="18"/>
-                                <buttonCell key="cell" type="radio" title="Lonpos 3D" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Bqc-ul-aV5">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="radioButtonTypedWithButton:" target="YY0-8h-dIt" id="gDA-zW-I1i"/>
-                                </connections>
-                            </button>
-                            <button verticalHuggingPriority="750" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="ADx-Q3-e9o">
-                                <rect key="frame" x="18" y="62" width="92" height="18"/>
-                                <buttonCell key="cell" type="radio" title="Lonpos 2D" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="QXI-eP-5Na">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="radioButtonTypedWithButton:" target="YY0-8h-dIt" id="4lq-VX-DYn"/>
-                                </connections>
-                            </button>
-                            <button verticalHuggingPriority="750" tag="3" translatesAutoresizingMaskIntoConstraints="NO" id="IEr-jV-ldp">
-                                <rect key="frame" x="18" y="40" width="67" height="18"/>
-                                <buttonCell key="cell" type="radio" title="Klotski" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="PZM-j5-kaN">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="radioButtonTypedWithButton:" target="YY0-8h-dIt" id="R6P-9i-tno"/>
-                                </connections>
-                            </button>
                             <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ySm-c3-Q0l">
                                 <rect key="frame" x="20" y="114" width="410" height="132"/>
                                 <clipView key="contentView" drawsBackground="NO" id="iya-qj-0Yc">
                                     <rect key="frame" x="0.0" y="0.0" width="410" height="132"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <textView importsGraphics="NO" richText="NO" verticallyResizable="YES" spellingCorrection="YES" smartInsertDelete="YES" id="ndO-5g-7b6">
+                                        <textView importsGraphics="NO" richText="NO" verticallyResizable="YES" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" contentType="oneTimeCode" id="ndO-5g-7b6">
                                             <rect key="frame" x="0.0" y="0.0" width="410" height="132"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
@@ -763,6 +733,9 @@
                                             <size key="minSize" width="410" height="132"/>
                                             <size key="maxSize" width="412" height="10000000"/>
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                            <allowedInputSourceLocales>
+                                                <string>NSAllRomanInputSourcesLocaleIdentifier</string>
+                                            </allowedInputSourceLocales>
                                         </textView>
                                     </subviews>
                                 </clipView>
@@ -786,28 +759,37 @@
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <comboBox verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FVP-KV-hfw">
+                                <rect key="frame" x="280" y="71" width="151" height="25"/>
+                                <comboBoxCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" title="Game Type" drawsBackground="YES" completes="NO" numberOfVisibleItems="5" id="fZF-M3-Ike">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <objectValues>
+                                        <string>Lonpos 3D</string>
+                                        <string>Lonpos 2D</string>
+                                        <string>Klotski</string>
+                                        <string>Woodoku</string>
+                                    </objectValues>
+                                </comboBoxCell>
+                            </comboBox>
                         </subviews>
                         <constraints>
                             <constraint firstItem="xSJ-Q6-RcZ" firstAttribute="leading" secondItem="Fh9-UX-Kx6" secondAttribute="leading" constant="20" symbolic="YES" id="2Sq-tl-rSA"/>
                             <constraint firstItem="ySm-c3-Q0l" firstAttribute="top" secondItem="xSJ-Q6-RcZ" secondAttribute="bottom" constant="8" symbolic="YES" id="2gG-hV-Nm0"/>
-                            <constraint firstItem="ADx-Q3-e9o" firstAttribute="leading" secondItem="bCm-g3-M4v" secondAttribute="leading" id="9G9-N3-hGZ"/>
-                            <constraint firstItem="bCm-g3-M4v" firstAttribute="top" secondItem="ndO-5g-7b6" secondAttribute="bottom" constant="13" id="AKj-Fh-P9R"/>
-                            <constraint firstItem="IEr-jV-ldp" firstAttribute="top" secondItem="ADx-Q3-e9o" secondAttribute="bottom" constant="6" symbolic="YES" id="H8L-A2-4Ba"/>
-                            <constraint firstItem="IEr-jV-ldp" firstAttribute="leading" secondItem="ADx-Q3-e9o" secondAttribute="leading" id="Ita-VK-ocs"/>
+                            <constraint firstItem="FVP-KV-hfw" firstAttribute="centerY" secondItem="dig-HT-lmC" secondAttribute="centerY" id="9J9-aa-N0R"/>
                             <constraint firstItem="ySm-c3-Q0l" firstAttribute="leading" secondItem="Fh9-UX-Kx6" secondAttribute="leading" constant="20" symbolic="YES" id="PXF-8q-dyw"/>
+                            <constraint firstItem="FVP-KV-hfw" firstAttribute="leading" secondItem="dig-HT-lmC" secondAttribute="trailing" constant="30" id="VU0-1L-OQ0"/>
                             <constraint firstItem="xSJ-Q6-RcZ" firstAttribute="top" secondItem="Fh9-UX-Kx6" secondAttribute="top" constant="30" id="ZRO-YY-tBg"/>
                             <constraint firstAttribute="trailing" secondItem="ySm-c3-Q0l" secondAttribute="trailing" constant="20" symbolic="YES" id="aFa-5x-OHU"/>
-                            <constraint firstItem="ADx-Q3-e9o" firstAttribute="top" secondItem="bCm-g3-M4v" secondAttribute="bottom" constant="6" symbolic="YES" id="g9n-YM-hfA"/>
                             <constraint firstItem="dig-HT-lmC" firstAttribute="centerX" secondItem="Fh9-UX-Kx6" secondAttribute="centerX" id="gsI-PM-VKX"/>
+                            <constraint firstAttribute="trailing" secondItem="FVP-KV-hfw" secondAttribute="trailing" constant="22" id="jdk-32-6NW"/>
                             <constraint firstItem="dig-HT-lmC" firstAttribute="top" secondItem="ndO-5g-7b6" secondAttribute="bottom" constant="20" symbolic="YES" id="qfy-mZ-VHD"/>
-                            <constraint firstItem="bCm-g3-M4v" firstAttribute="leading" secondItem="ndO-5g-7b6" secondAttribute="leading" id="utC-Qj-9P3"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="btnKlotski" destination="IEr-jV-ldp" id="rGm-FF-Pbx"/>
-                        <outlet property="btnLonpos2d" destination="ADx-Q3-e9o" id="CTm-ei-caw"/>
-                        <outlet property="btnLonpos3d" destination="bCm-g3-M4v" id="h18-NJ-0Qg"/>
                         <outlet property="button" destination="dig-HT-lmC" id="gQs-jr-geg"/>
+                        <outlet property="comboBox" destination="FVP-KV-hfw" id="EqZ-HU-soa"/>
                         <outlet property="inputTextField" destination="ndO-5g-7b6" id="Wuz-QO-ayg"/>
                     </connections>
                 </viewController>

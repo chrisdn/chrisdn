@@ -6,15 +6,14 @@
 //
 
 import SceneKit
+import SpriteKit
 import QuartzCore
 
 class GameViewController: NSViewController {
     private var sceneList = [] as [SCNView]
     @IBOutlet var inputTextField: NSTextView!
     @IBOutlet var button: NSButton!
-    @IBOutlet var btnLonpos3d: NSButton!
-    @IBOutlet var btnLonpos2d: NSButton!
-    @IBOutlet var btnKlotski: NSButton!
+    @IBOutlet var comboBox: NSComboBox!
     let queue = DispatchQueue(label: "lonpos_queue")
     
     private func showGame(game: IGame) {
@@ -117,13 +116,8 @@ class GameViewController: NSViewController {
         return scene
     }
     
-    @IBAction func radioButtonTyped(button: NSButton) {
-        print(button.title)
-    }
-    
     @IBAction func startGame(sender: NSControl) {
         let str = inputTextField.string
-        UserDefaults.standard.setValue(str, forKey: "last_input")
         /*
          "BBFFFBBWSFBWWSFWWYSSYYYYS"
          "UU  SU   SU  SSU  S"
@@ -133,39 +127,46 @@ class GameViewController: NSViewController {
          "B    CBC  CCC,B    B,B"
          */
         do {
-            if btnLonpos2d.state == .on {
+            switch comboBox.stringValue {
+            case "Lonpos 2D":
                 UserDefaults.standard.setValue(2, forKey: "last_game_type")
                 let game = try Game2d(str.uppercased().replacingOccurrences(of: ".", with: " "))
                 button.isEnabled = false
+                UserDefaults.standard.setValue(str, forKey: "last_input")
                 queue.async {
                     game.start()
                 }
-            } else if btnLonpos3d.state == .on {
+            case "Lonpos 3D":
                 UserDefaults.standard.setValue(1, forKey: "last_game_type")
                 let strList = str.uppercased().replacingOccurrences(of: ".", with: " ").split(separator: ",", omittingEmptySubsequences: false).map {String($0)}
                 let game = strList.count > 1 ? try Game3d(strList) : try Game3d(str.uppercased().replacingOccurrences(of: ".", with: " "))
                 button.isEnabled = false
+                UserDefaults.standard.setValue(str, forKey: "last_input")
                 queue.async {
                     game.start()
                 }
-            } else if btnKlotski.state == .on {
+            case "Klotski":
                 UserDefaults.standard.setValue(3, forKey: "last_game_type")
                 let game = Klotski(str.replacingOccurrences(of: ".", with: " "))
+                UserDefaults.standard.setValue(str, forKey: "last_input")
                 queue.async {
                     game.start()
                 }
-            } else {
-                showAlert(message: "Please select a game type")
+            case "Woodoku":
+                UserDefaults.standard.setValue(4, forKey: "last_game_type")
+                showWoodoku()
+            default:
+                GameViewController.showAlert(message: "Please select a game type")
             }
         } catch LonposError.inputError(let msg){
-            showAlert(message: msg)
+            GameViewController.showAlert(message: msg)
         } catch {
             print(error)
         }
         UserDefaults.standard.synchronize()
     }
     
-    private func showAlert(message: String) {
+    fileprivate static func showAlert(message: String) {
         let alert = NSAlert()
         alert.messageText = message
         alert.alertStyle = .informational
@@ -173,19 +174,41 @@ class GameViewController: NSViewController {
         alert.runModal()
     }
     
+    private func showWoodoku() {
+        inputTextField.isHidden = true
+        let skView = SKView()
+        skView.ignoresSiblingOrder = true
+        let scene = MySKScene(size: view.bounds.size)
+        
+        skView.presentScene(scene)
+        skView.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(skView)
+        NSLayoutConstraint.activate([
+            skView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            skView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            skView.topAnchor.constraint(equalTo: view.topAnchor),
+            skView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         if let input = UserDefaults.standard.string(forKey: "last_input") {
             inputTextField.string = input
         }
         let type = UserDefaults.standard.integer(forKey: "last_game_type")
         switch type {
         case 1:
-            btnLonpos3d.state = .on
+            comboBox.stringValue = "Lonpos 3D"
         case 2:
-            btnLonpos2d.state = .on
+            comboBox.stringValue = "Lonpos 2D"
         case 3:
-            btnKlotski.state = .on
+            comboBox.stringValue = "Klotski"
+        case 4:
+            comboBox.stringValue = "Woodoku"
         default:
             break
         }
@@ -199,7 +222,11 @@ class GameViewController: NSViewController {
             case let g as IGame:
                 self.showGame(game: g)
             case let g as Klotski:
-                self.inputTextField.string = g.steps.description
+                var str = ""
+                for step in g.steps {
+                    str += step.description + " | "
+                }
+                self.inputTextField.string = str
             default:
                 break
             }
@@ -250,5 +277,205 @@ class GameViewController: NSViewController {
             
             SCNTransaction.commit()
         }
+    }
+}
+
+class MySKScene: SKScene {
+    var game: Woodoku
+    let radius: Double = 25
+    let smallRadius = 5 as Double
+    private var isCalculating = false
+    
+    override init(size: CGSize) {
+        if let list = UserDefaults.standard.object(forKey: "Woodoku") as? [[Bool]] {
+            game = Woodoku(board: list)
+        } else {
+            game = Woodoku()
+        }
+        super.init(size: size)
+        
+        scaleMode = .resizeFill
+        let root = SKNode()
+        //board
+        for x in 0...8 {
+            for y in 0...8 {
+                let node = SKShapeNode(circleOfRadius: radius)
+                node.position = CGPoint(x: Double(x) * radius * 2 + radius, y: Double(8 - y) * radius * 2 + radius)
+                node.fillColor = game.board[y][x] ? .red : .clear
+                node.strokeColor = NSColor(white: 0.4, alpha: 1)
+                node.name = "\(x),\(y)" + (game.board[y][x] ? "red" : "")
+                root.addChild(node)
+            }
+        }
+        //pieces
+        var yoffset = smallRadius
+        var xoffset = radius * 2 * 10
+        for type in Woodoku.PieceType.allCases {
+            let piece = type.piece
+            let node = SKNode()
+            node.name = "piece:" + type.rawValue
+            self.addChild(node)
+            for y in 0..<piece.pattern.count {
+                for x in 0..<piece.pattern[y].count where piece.pattern[y][x] {
+                    let ball = SKShapeNode(circleOfRadius: smallRadius)
+                    ball.fillColor = .yellow
+                    ball.strokeColor = .black
+                    ball.position = CGPoint(x: Double(x) * smallRadius * 2, y: Double(piece.pattern.count - 1 - y) * smallRadius * 2)
+                    node.addChild(ball)
+                }
+            }
+            node.position = CGPoint(x: xoffset, y: yoffset)
+            yoffset += smallRadius * 2 * Double(piece.pattern.count + 1)
+            if yoffset >= radius * 2 * 9 {
+                yoffset = smallRadius
+                xoffset += radius * 3
+            }
+        }
+        
+        addChild(root)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func updateBoard() {
+        for x in 0...8 {
+            for y in 0...8 {
+                guard let node = (childNode(withName: "//\(x),\(y)") ?? childNode(withName: "//\(x),\(y)red")) as? SKShapeNode else {
+                    print("cannot find node with name begins with \(x),\(y)")
+                    abort()
+                }
+                node.fillColor = game.board[y][x] ? .red : .clear
+                node.name = "\(x),\(y)" + (game.board[y][x] ? "red" : "")
+            }
+        }
+    }
+    
+    override func mouseUp(with event: NSEvent) {
+        guard !isCalculating else {return}
+        var node = atPoint(event.location(in: self))
+        if node.name == nil, let parent = node.parent {
+            node = parent
+        }
+        guard let name = node.name, name.count >= 3 else {return}
+        guard let snode = node as? SKShapeNode else {
+            let selected = name.hasPrefix("spiece:")
+            if selected {
+                var newName = name
+                newName.removeFirst()
+                node.name = newName
+            } else {
+                node.name = "s" + name
+            }
+            
+            for subnode in node.children {
+                if let shapeNode = subnode as? SKShapeNode {
+                    shapeNode.fillColor = selected ? .yellow : .red
+                }
+            }
+            
+            if !selected {
+                let selectedPiece = self.children.compactMap {$0.name}.filter {$0.hasPrefix("spiece:")}.map {$0.substring(from: $0.index($0.startIndex, offsetBy: 7))}.compactMap {Woodoku.PieceType(rawValue: $0)?.piece}
+                if selectedPiece.count == 3 {
+                    isCalculating = true
+                    DispatchQueue.global(qos: .background).async {
+                        if let bestPiecePositions = self.game.place(pieces: selectedPiece) {
+                            self.isCalculating = false
+                            DispatchQueue.main.async {
+                                //unselected all pieces
+                                self.enumerateChildNodes(withName: "//spiece:*") { node, _ in
+                                    for snode in node.children {
+                                        (snode as? SKShapeNode)?.fillColor = .yellow
+                                    }
+                                    
+                                    if var name = node.name {
+                                        name.removeFirst()
+                                        print(node.name ?? "-", name)
+                                        node.name = name
+                                    }
+                                }
+                                //update board ui
+                                for pieceIndex in 0..<bestPiecePositions.count {
+                                    let piecePosition = bestPiecePositions[pieceIndex]
+                                    let piece = piecePosition.piece
+                                    let pos = piecePosition.pos
+                                    for y in 0..<piece.pattern.count {
+                                        for x in 0..<piece.pattern[y].count where piece.pattern[y][x] {
+                                            guard let node = self.childNode(withName: "//\(x + pos.x),\(y + pos.y)") as? SKShapeNode else {
+                                                print("cannot find node with name begins with \(x + pos.x),\(y + pos.y)")
+                                                abort()
+                                            }
+                                            node.fillColor = NSColor(hue: CGFloat(pieceIndex + 1) / 6, saturation: 1, brightness: 1, alpha: 1)
+                                            self.game.board[y + pos.y][x + pos.x] = true
+                                        }
+                                    }
+                                }
+                                
+                                Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
+                                    GameViewController.showAlert(message: "Click button to trim")
+                                    let unTrimmedGame = self.game
+                                    self.game.trim()
+//                                    self.updateBoard()
+                                    for x in 0...8 {
+                                        for y in 0...8 {
+                                            if unTrimmedGame.board[y][x] && !self.game.board[y][x] {
+                                                guard let node = self.childNode(withName: "//\(x),\(y)*") as? SKShapeNode else {
+                                                    print("cannot find node with name begins with \(x),\(y)")
+                                                    abort()
+                                                }
+                                                node.run(node.getFillColorFadeOutAction())
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return
+        }
+        
+        let charArray = Array(name)
+        guard let x = Int(String(charArray[0])), let y = Int(String(charArray[2])) else {return}
+        
+        if name.hasSuffix("red") {
+            snode.fillColor = .clear
+            game.board[y][x] = false
+            var newName = name
+            newName.removeLast(3)
+            snode.name = newName
+        } else {
+            snode.fillColor = .red
+            game.board[y][x] = true
+            snode.name = (snode.name ?? "") + "red"
+        }
+        UserDefaults.standard.set(game.board, forKey: "Woodoku")
+        UserDefaults.standard.synchronize()
+    }
+}
+
+extension SKShapeNode {
+    func getFillColorFadeOutAction() -> SKAction {
+        func lerp(_ a: Double, _ b: Double, _ fraction: Double) -> Double {
+            return (b-a) * fraction + a
+        }
+
+        // get the Color components of col1 and col2
+        var r:CGFloat = 0.0, g:CGFloat = 0.0, b:CGFloat = 0.0, a1:CGFloat = 0.0;
+        fillColor.getRed(&r, green: &g, blue: &b, alpha: &a1)
+        let a2:CGFloat = 0.0;
+
+        // return a color fading on the fill color
+        let timeToRun: CGFloat = 0.3;
+        
+        let action = SKAction.customAction(withDuration: 0.3) { node, elapsedTime in
+            let fraction = elapsedTime / timeToRun
+            let col3 = SKColor(red: r, green: g, blue: b, alpha: lerp(a1,a2,fraction))
+            (node as? SKShapeNode)?.fillColor = col3
+        }
+
+        return action
     }
 }

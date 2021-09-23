@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Point2d {
+struct Point2d: Hashable {
     var x, y: Int
     
     var index: Int {

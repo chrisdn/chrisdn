@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C23B52626F5542C007E9571 /* Wooduku.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C23B52526F5542C007E9571 /* Wooduku.swift */; };
+		4C23B52726F64864007E9571 /* Wooduku.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C23B52526F5542C007E9571 /* Wooduku.swift */; };
 		4C2FD7B826E42D310099683C /* Klotski.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C2FD7B726E42D310099683C /* Klotski.swift */; };
 		4C50FEEC26E078C700C2EC9B /* lonpos2d_distance.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C50FEEB26E078C700C2EC9B /* lonpos2d_distance.plist */; };
 		4C50FEEE26E079A400C2EC9B /* lonpos3d_distance.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C50FEED26E079A400C2EC9B /* lonpos3d_distance.plist */; };
@@ -31,6 +33,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4C23B52526F5542C007E9571 /* Wooduku.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wooduku.swift; sourceTree = "<group>"; };
 		4C2FD7B726E42D310099683C /* Klotski.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Klotski.swift; sourceTree = "<group>"; };
 		4C50FEEB26E078C700C2EC9B /* lonpos2d_distance.plist */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = lonpos2d_distance.plist; sourceTree = "<group>"; };
 		4C50FEED26E079A400C2EC9B /* lonpos3d_distance.plist */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = lonpos3d_distance.plist; sourceTree = "<group>"; };
@@ -95,6 +98,7 @@
 				4C50FEED26E079A400C2EC9B /* lonpos3d_distance.plist */,
 				4C6D498926E11FA3008777D9 /* Model3D.swift */,
 				4C2FD7B726E42D310099683C /* Klotski.swift */,
+				4C23B52526F5542C007E9571 /* Wooduku.swift */,
 			);
 			path = Lonpos3D;
 			sourceTree = "<group>";
@@ -209,6 +213,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C23B52626F5542C007E9571 /* Wooduku.swift in Sources */,
 				4CB41B0926D6C953008B95AD /* Model.swift in Sources */,
 				4C2FD7B826E42D310099683C /* Klotski.swift in Sources */,
 				4CA5272926D30A9200924FEF /* GameViewController.swift in Sources */,
@@ -222,6 +227,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C23B52726F64864007E9571 /* Wooduku.swift in Sources */,
 				4CB41B0126D686D2008B95AD /* Lonpos3DTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

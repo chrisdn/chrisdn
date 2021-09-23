@@ -48,6 +48,12 @@ class Lonpos3DTests: XCTestCase {
         let p2 = Point2d(x: 2, y: 4)
         XCTAssert(table[p1.index * 55 + p2.index] == 10)
     }
+    
+    func testWoodoku() {
+        for p in Woodoku.PieceType.allCases {
+            print(p.piece)
+        }
+    }
 
     func testPerformanceExample() throws {
         // This is an example of a performance test case.
