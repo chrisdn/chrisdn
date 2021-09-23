@@ -281,10 +281,11 @@ class GameViewController: NSViewController {
 }
 
 class MySKScene: SKScene {
-    var game: Woodoku
-    let radius: Double = 25
-    let smallRadius = 5 as Double
+    private var game: Woodoku
+    private let radius: Double = 25
+    private let smallRadius = 5 as Double
     private var isCalculating = false
+    private var selectedPieces: [Woodoku.Piece] = []
     
     override init(size: CGSize) {
         if let list = UserDefaults.standard.object(forKey: "Woodoku") as? [[Bool]] {
@@ -378,60 +379,8 @@ class MySKScene: SKScene {
             if !selected {
                 let selectedPiece = self.children.compactMap {$0.name}.filter {$0.hasPrefix("spiece:")}.map {$0.substring(from: $0.index($0.startIndex, offsetBy: 7))}.compactMap {Woodoku.PieceType(rawValue: $0)?.piece}
                 if selectedPiece.count == 3 {
-                    isCalculating = true
-                    DispatchQueue.global(qos: .background).async {
-                        if let bestPiecePositions = self.game.place(pieces: selectedPiece) {
-                            self.isCalculating = false
-                            DispatchQueue.main.async {
-                                //unselected all pieces
-                                self.enumerateChildNodes(withName: "//spiece:*") { node, _ in
-                                    for snode in node.children {
-                                        (snode as? SKShapeNode)?.fillColor = .yellow
-                                    }
-                                    
-                                    if var name = node.name {
-                                        name.removeFirst()
-                                        print(node.name ?? "-", name)
-                                        node.name = name
-                                    }
-                                }
-                                //update board ui
-                                for pieceIndex in 0..<bestPiecePositions.count {
-                                    let piecePosition = bestPiecePositions[pieceIndex]
-                                    let piece = piecePosition.piece
-                                    let pos = piecePosition.pos
-                                    for y in 0..<piece.pattern.count {
-                                        for x in 0..<piece.pattern[y].count where piece.pattern[y][x] {
-                                            guard let node = self.childNode(withName: "//\(x + pos.x),\(y + pos.y)") as? SKShapeNode else {
-                                                print("cannot find node with name begins with \(x + pos.x),\(y + pos.y)")
-                                                abort()
-                                            }
-                                            node.fillColor = NSColor(hue: CGFloat(pieceIndex + 1) / 6, saturation: 1, brightness: 1, alpha: 1)
-                                            self.game.board[y + pos.y][x + pos.x] = true
-                                        }
-                                    }
-                                }
-                                
-                                Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
-                                    GameViewController.showAlert(message: "Click button to trim")
-                                    let unTrimmedGame = self.game
-                                    self.game.trim()
-//                                    self.updateBoard()
-                                    for x in 0...8 {
-                                        for y in 0...8 {
-                                            if unTrimmedGame.board[y][x] && !self.game.board[y][x] {
-                                                guard let node = self.childNode(withName: "//\(x),\(y)*") as? SKShapeNode else {
-                                                    print("cannot find node with name begins with \(x),\(y)")
-                                                    abort()
-                                                }
-                                                node.run(node.getFillColorFadeOutAction())
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    selectedPieces = selectedPiece
+                    calculate()
                 }
             }
             return
@@ -453,6 +402,70 @@ class MySKScene: SKScene {
         }
         UserDefaults.standard.set(game.board, forKey: "Woodoku")
         UserDefaults.standard.synchronize()
+    }
+    
+    private func response(to bestPiecePositions: [Woodoku.PieceWithPosition]) {
+        //update board ui
+        for pieceIndex in 0..<bestPiecePositions.count {
+            let piecePosition = bestPiecePositions[pieceIndex]
+            let piece = piecePosition.piece
+            let pos = piecePosition.pos
+            for y in 0..<piece.pattern.count {
+                for x in 0..<piece.pattern[y].count where piece.pattern[y][x] {
+                    guard let node = self.childNode(withName: "//\(x + pos.x),\(y + pos.y)") as? SKShapeNode else {
+                        print("cannot find node with name begins with \(x + pos.x),\(y + pos.y)")
+                        abort()
+                    }
+                    node.fillColor = NSColor(hue: CGFloat(pieceIndex + 1) / 6, saturation: 1, brightness: 1, alpha: 1)
+                    self.game.board[y + pos.y][x + pos.x] = true
+                }
+            }
+        }
+        
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
+            self.showTrimmedBoard()
+        }
+    }
+    
+    private func showTrimmedBoard() {
+        GameViewController.showAlert(message: "Click button to trim")
+        let unTrimmedGame = game
+        self.game.trim()
+        for x in 0...8 {
+            for y in 0...8 {
+                if unTrimmedGame.board[y][x] && !game.board[y][x] {
+                    guard let node = childNode(withName: "//\(x),\(y)*") as? SKShapeNode else {
+                        print("cannot find node with name begins with \(x),\(y)")
+                        abort()
+                    }
+                    node.run(node.getFillColorFadeOutAction())
+                }
+            }
+        }
+    }
+    
+    private func calculate() {
+        isCalculating = true
+        DispatchQueue.global(qos: .background).async {
+            if let bestPiecePositions = self.game.place(pieces: self.selectedPieces) {
+                self.isCalculating = false
+                DispatchQueue.main.async {
+                    //unselected all pieces
+                    self.enumerateChildNodes(withName: "//spiece:*") { node, _ in
+                        for snode in node.children {
+                            (snode as? SKShapeNode)?.fillColor = .yellow
+                        }
+                        
+                        if var name = node.name {
+                            name.removeFirst()
+                            print(node.name ?? "-", name)
+                            node.name = name
+                        }
+                    }
+                    self.response(to: bestPiecePositions)
+                }
+            }
+        }
     }
 }
 
