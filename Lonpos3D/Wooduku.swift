@@ -23,6 +23,7 @@ struct Woodoku {
         case t1 = "333,.1.,.1.", t2 = "..1,333,..1", t3 = ".1.,.1.,333", t4 = "1,333,1"
         case st1 = "333,.1", st2 = "1,22,1", st3 = ".1,333", st4 = ".1,22,.1"
         case f1 = "333,..1,..1", f2 = "333,1,1", f3 = "1,1,333", f4 = "..1,..1,333"
+        case dot = "1"
         
         var piece: Piece {
             return Piece(string: rawValue)
@@ -155,11 +156,11 @@ struct Woodoku {
         }
     }
     
-    private static func place(piece: Piece, in game: Woodoku, at point:Point2d) -> Woodoku? {
-        var newGame = Woodoku(board: game.board)
+    func place(piece: Piece, at point:Point2d) -> Woodoku? {
+        var newGame = self
         for dy in 0..<piece.pattern.count {
             for dx in 0..<piece.pattern[dy].count where piece.pattern[dy][dx] {
-                if game.board[point.y + dy][point.x + dx] {
+                if board[point.y + dy][point.x + dx] {
                     return nil
                 }
                 newGame.board[point.y + dy][point.x + dx] = true
@@ -172,26 +173,33 @@ struct Woodoku {
         print(self)
         var bestPiecePositions: [PieceWithPosition]?
         var bestScore = 0
-        //first piece
-        for y0 in 0...8 where y0 + pieces[0].yLength <= 9 {
-            for x0 in 0...8 where x0 + pieces[0].xLength <= 9 {
-                if let game0 = Woodoku.place(piece: pieces[0], in: self, at: Point2d(x: x0, y: y0)) {
-                    for y1 in 0...8 where y1 + pieces[1].yLength <= 9 {
-                        for x1 in 0...8 where x1 + pieces[1].xLength <= 9 {
-                            if let game1 = Woodoku.place(piece: pieces[1], in: game0, at: Point2d(x: x1, y: y1)) {
-                                for y2 in 0...8 where y2 + pieces[2].yLength <= 9 {
-                                    for x2 in 0...8 where x2 + pieces[2].xLength <= 9 {
-                                        if let game2 = Woodoku.place(piece: pieces[2], in: game1, at: Point2d(x: x2, y: y2)) {
-                                            var gameAfterTrim = game2
-                                            gameAfterTrim.trim()
-                                            let score = gameAfterTrim.score
-                                            if score > bestScore {
-                                                bestScore = score
-                                                bestPiecePositions = [
-                                                    PieceWithPosition(piece: pieces[0], pos: Point2d(x: x0, y: y0)),
-                                                    PieceWithPosition(piece: pieces[1], pos: Point2d(x: x1, y: y1)),
-                                                    PieceWithPosition(piece: pieces[2], pos: Point2d(x: x2, y: y2))
-                                                ]
+        for indexes in [[0,1,2], [0,2,1], [1,0,2], [1,2,0], [2,0,1], [2,1,0]] {
+            for y0 in 0...8 where y0 + pieces[indexes[0]].yLength <= 9 {
+                for x0 in 0...8 where x0 + pieces[indexes[0]].xLength <= 9 {
+                    if let ugame0 = place(piece: pieces[indexes[0]], at: Point2d(x: x0, y: y0)) {
+                        var game0 = ugame0
+                        game0.trim()
+                        for y1 in 0...8 where y1 + pieces[indexes[1]].yLength <= 9 {
+                            for x1 in 0...8 where x1 + pieces[indexes[1]].xLength <= 9 {
+                                if let ugame1 = game0.place(piece: pieces[indexes[1]], at: Point2d(x: x1, y: y1)) {
+                                    var game1 = ugame1
+                                    game1.trim()
+                                    for y2 in 0...8 where y2 + pieces[indexes[2]].yLength <= 9 {
+                                        for x2 in 0...8 where x2 + pieces[indexes[2]].xLength <= 9 {
+                                            if let ugame2 = game1.place(piece: pieces[indexes[2]], at: Point2d(x: x2, y: y2)) {
+                                                var game2 = ugame2
+                                                game2.trim()
+                                                var gameAfterTrim = game2
+                                                gameAfterTrim.trim()
+                                                let score = gameAfterTrim.score
+                                                if score > bestScore {
+                                                    bestScore = score
+                                                    bestPiecePositions = [
+                                                        PieceWithPosition(piece: pieces[indexes[0]], pos: Point2d(x: x0, y: y0)),
+                                                        PieceWithPosition(piece: pieces[indexes[1]], pos: Point2d(x: x1, y: y1)),
+                                                        PieceWithPosition(piece: pieces[indexes[2]], pos: Point2d(x: x2, y: y2))
+                                                    ]
+                                                }
                                             }
                                         }
                                     }
@@ -222,13 +230,14 @@ extension Woodoku.Piece: CustomStringConvertible {
 
 extension Woodoku: CustomStringConvertible {
     var description: String {
-        var result = "\n"
+        var result = "\n-----------\n"
         for line in board {
+            result += "|"
             for b in line {
-                result += b ? "x" : "+"
+                result += b ? "x" : " "
             }
-            result += "\n"
+            result += "|\n"
         }
-        return result
+        return result + "-----------"
     }
 }
