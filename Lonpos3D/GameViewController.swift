@@ -401,28 +401,31 @@ class MySKScene: SKScene {
         saveGame()
     }
     
-    private func response(to bestPiecePositions: [Woodoku.PieceWithPosition]) {
-        //update board ui
-        for pieceIndex in 0..<bestPiecePositions.count {
-            let piecePosition = bestPiecePositions[pieceIndex]
-            let piece = piecePosition.piece
-            let pos = piecePosition.pos
-            for y in 0..<piece.pattern.count {
-                for x in 0..<piece.pattern[y].count where piece.pattern[y][x] {
-                    guard let node = self.childNode(withName: "//\(x + pos.x),\(y + pos.y)") as? SKShapeNode else {
-                        print("cannot find node with name begins with \(x + pos.x),\(y + pos.y)")
-                        abort()
-                    }
-                    node.fillColor = NSColor(hue: CGFloat(pieceIndex + 1) / 6, saturation: 1, brightness: 1, alpha: 1)
-                }
-            }
-        }
-        
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
-            self.showTrimmedBoard(piecePlaces: bestPiecePositions)
+    private func showSteps(bestPiecePositions: [Woodoku.PieceWithPosition], colorValue: CGFloat) {
+        guard let piecePosition = bestPiecePositions.first else {
             //remove selected pieces
             self.enumerateChildNodes(withName: "selected") { node, _ in
                 node.removeFromParent()
+            }
+            saveGame()
+            return
+        }
+        let piece = piecePosition.piece
+        let pos = piecePosition.pos
+        for y in 0..<piece.pattern.count {
+            for x in 0..<piece.pattern[y].count where piece.pattern[y][x] {
+                guard let node = self.childNode(withName: "//\(x + pos.x),\(y + pos.y)") as? SKShapeNode else {
+                    print("cannot find node with name begins with \(x + pos.x),\(y + pos.y)")
+                    abort()
+                }
+                node.fillColor = NSColor(hue: colorValue, saturation: 1, brightness: 1, alpha: 1)
+            }
+        }
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
+            self.showTrimmedBoardWithAnimation(pieceWithPlace: piecePosition)
+            Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
+                GameViewController.showAlert(message: "Next")
+                self.showSteps(bestPiecePositions: Array(bestPiecePositions.dropFirst()), colorValue: 0.2 + colorValue)
             }
         }
     }
@@ -432,14 +435,14 @@ class MySKScene: SKScene {
         UserDefaults.standard.synchronize()
     }
     
-    private func showTrimmedBoard(piecePlaces: [Woodoku.PieceWithPosition]) {
-        GameViewController.showAlert(message: "Click button to trim")
+    private func showTrimmedBoardWithAnimation(pieceWithPlace: Woodoku.PieceWithPosition) {
         let unTrimmedGame = game
-        for pieceWithPosition in piecePlaces {
-            game = game.place(piece: pieceWithPosition.piece, at: pieceWithPosition.pos)!
-            game.trim()
+        if let g = game.place(piece: pieceWithPlace.piece, at: pieceWithPlace.pos) {
+            game = g
+        } else {
+            abort()
         }
-        saveGame()
+        game.trim()
         for x in 0...8 {
             for y in 0...8 {
                 if unTrimmedGame.board[y][x] && !game.board[y][x] {
@@ -463,7 +466,8 @@ class MySKScene: SKScene {
                 DispatchQueue.main.async {
                     self.isCalculating = false
                     self.selectedPieces.removeAll()
-                    self.response(to: bestPiecePositions)
+//                    self.response(to: bestPiecePositions)
+                    self.showSteps(bestPiecePositions: bestPiecePositions, colorValue: 0.2)
                 }
             }
         }
