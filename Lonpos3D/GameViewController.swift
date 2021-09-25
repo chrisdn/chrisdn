@@ -286,6 +286,7 @@ class MySKScene: SKScene {
     private let smallRadius = 5 as Double
     private var isCalculating = false
     private var selectedPieces: [Woodoku.Piece] = []
+    let labelNode = SKLabelNode(text: "Calculating...")
     
     override init(size: CGSize) {
         if let list = UserDefaults.standard.object(forKey: "Woodoku") as? [[Bool]] {
@@ -295,8 +296,12 @@ class MySKScene: SKScene {
         }
         super.init(size: size)
         
+        addChild(labelNode)
+        labelNode.alpha = 0
+        labelNode.position = CGPoint(x: Double(1 + 4 * 6) * 2 * smallRadius, y: 9 * radius * 2 + radius)
         scaleMode = .resizeFill
-        let root = SKNode()
+        let board = SKNode()
+        addChild(board)
         //draw board
         for x in 0...8 {
             for y in 0...8 {
@@ -305,7 +310,7 @@ class MySKScene: SKScene {
                 node.fillColor = game.board[y][x] ? .red : .clear
                 node.strokeColor = NSColor(white: 0.4, alpha: 1)
                 node.name = "\(x),\(y)" + (game.board[y][x] ? "red" : "")
-                root.addChild(node)
+                board.addChild(node)
             }
         }
         //draw pieces
@@ -324,7 +329,11 @@ class MySKScene: SKScene {
             }
         }
         
-        addChild(root)
+        let clearAllNode = SKLabelNode(text: "Clear Board")
+        clearAllNode.fontSize = 12
+        clearAllNode.name = "clear"
+        clearAllNode.position = CGPoint(x: xoffset, y: yoffset)
+        addChild(clearAllNode)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -367,18 +376,39 @@ class MySKScene: SKScene {
         guard let name = node.name, name.count >= 3 else {return}
         guard let snode = node as? SKShapeNode else {
             if let name = node.name, name.hasPrefix("piece:") {
+                let list = self["selected[0-2]"].compactMap {$0.name?.last}.compactMap {Int(String($0))}
+                let set = Set<Int>(list)
+                let candidates: Set<Int> = [0, 1, 2]
+                let index = candidates.subtracting(set).min() ?? 0
+                
                 let rawValue = name[name.index(name.startIndex, offsetBy: 6)...]
                 if let pieceType = Woodoku.PieceType(rawValue: String(rawValue)) {
                     let piece = pieceType.piece
                     let node = createNode(for: piece)
-                    node.name = "selected"
-                    node.position = CGPoint(x: Double(1 + selectedPieces.count * 5) * 2 * smallRadius, y: 9 * radius * 2 + radius)
+                    node.name = "selected\(index)"
+                    node.position = CGPoint(x: Double(1 + index * 6) * 2 * smallRadius, y: 9 * radius * 2 + radius)
                     addChild(node)
                     selectedPieces.append(piece)
                 }
                 
                 if selectedPieces.count == 3 {
                     calculate()
+                }
+            } else if name.hasPrefix("selected") {
+                //deselect a previously selected node
+                if let ch = Array(name).last, let index = Int(String(ch)) {
+                    selectedPieces.remove(at: index)
+                    node.removeFromParent()
+                    print(selectedPieces)
+                }
+            } else if name == "clear" {
+                game = Woodoku()
+                self.enumerateChildNodes(withName: "//[0-8],[0-8]*") { node, _ in
+                    (node as? SKShapeNode)?.fillColor = .clear
+                    if let name = node.name, name.hasSuffix("red") {
+                        let newName = name[..<name.index(name.startIndex, offsetBy: 3)]
+                        node.name = String(newName)
+                    }
                 }
             }
             return
@@ -403,10 +433,8 @@ class MySKScene: SKScene {
     
     private func showSteps(bestPiecePositions: [Woodoku.PieceWithPosition], colorValue: CGFloat) {
         guard let piecePosition = bestPiecePositions.first else {
-            //remove selected pieces
-            self.enumerateChildNodes(withName: "selected") { node, _ in
-                node.removeFromParent()
-            }
+            //remove all selected pieces
+            removeAllSelectedPieceNodes()
             saveGame()
             return
         }
@@ -442,7 +470,7 @@ class MySKScene: SKScene {
         } else {
             abort()
         }
-        game.trim()
+        _ = game.trim()
         for x in 0...8 {
             for y in 0...8 {
                 if unTrimmedGame.board[y][x] && !game.board[y][x] {
@@ -461,15 +489,28 @@ class MySKScene: SKScene {
     
     private func calculate() {
         isCalculating = true
+        labelNode.alpha = 1
         DispatchQueue.global(qos: .background).async {
-            if let bestPiecePositions = self.game.place(pieces: self.selectedPieces) {
-                DispatchQueue.main.async {
-                    self.isCalculating = false
+            let bestPiecePositions = self.game.place(pieces: self.selectedPieces)
+            DispatchQueue.main.async {
+                self.isCalculating = false
+                self.labelNode.alpha = 0
+                self.selectedPieces.removeAll()
+                if let solutions = bestPiecePositions {
+                    GameViewController.showAlert(message: "Solution found")
+                    self.showSteps(bestPiecePositions: solutions, colorValue: 0.2)
+                } else {
+                    GameViewController.showAlert(message: "Solution not found")
                     self.selectedPieces.removeAll()
-//                    self.response(to: bestPiecePositions)
-                    self.showSteps(bestPiecePositions: bestPiecePositions, colorValue: 0.2)
+                    self.removeAllSelectedPieceNodes()
                 }
             }
+        }
+    }
+    
+    private func removeAllSelectedPieceNodes() {
+        self.enumerateChildNodes(withName: "selected[0-2]") { node, _ in
+            node.removeFromParent()
         }
     }
 }
