@@ -86,85 +86,86 @@ struct Woodoku {
         board = list
     }
     
-    var score: Float {
-        var result:Float = 0
+    var basicScore: Int {
+        var result = 0
         for y in 0...8 {
-            for x in 0...8 {
-                result += board[y][x] ? 0 : 1
+            for x in 0...8 where !board[y][x] {
+                result += 1
             }
         }
-        
-        //middle grid emptyness check
-        for x in 3...5 {
-            for y in 3...5 {
-                if board[y][x] {
-                    result -= 0.3
-                }
-            }
-        }
-        
-        //isolated space check
-        /*for x in 0...8 {
-            for y in 0...8 where !board[y][x] {
-                switch (x, y) {
-                case (0,0):
-                    if board[0][1] && board[1][0] {result -= 0.5}
-                case (0,8):
-                    if board[7][0] && board[8][1] {result -= 0.5}
-                case (8,0):
-                    if board[1][8] && board[0][7] {result -= 0.5}
-                case (8,8):
-                    if board[8][7] && board[7][8] {result -= 0.5}
-                case (0,1...7):
-                    if board[y - 1][x] && board[y + 1][x] && board[y][x + 1] {result -= 0.5}
-                case (8,1...7):
-                    if board[y - 1][x] && board[y + 1][x] && board[y][x - 1] {result -= 0.5}
-                case (1...7,0):
-                    if board[y][x - 1] && board[y][x + 1] && board[y + 1][x] {result -= 0.5}
-                case (1...7,8):
-                    if board[y][x - 1] && board[y][x + 1] && board[y - 1][x] {result -= 0.5}
-                default:
-                    if board[y - 1][x] && board[y + 1][x] && board[y][x - 1] && board[y][x + 1] {result -= 0.5}
-                }
-            }
-        }*/
-        
-        //isolated area count
-        var iac = 1
-        var area = Array(repeating: Array(repeating: 0, count: 9), count: 9)
-        for x in 0...8 {
-            for y in 0...8 where !board[y][x] && area[y][x] == 0 {
-                area[y][x] = iac
-                //expand to adjacent space
-                occupy(x: x, y: y, iac: iac, area: &area)
-                iac += 1
-            }
-        }
-        
-        result -= Float(iac - 1) * 0.3
-        
         return result
+    }
+    
+    var weight: Int {
+        var result = 0
+        for y in 0...8 {
+            for x in 0...8 where board[y][x] {
+                result += (y - 4) * (y - 4) + (x - 4) * (x - 4)
+            }
+        }
+        return result
+    }
+    
+    private static var difficultPieces: [Piece] = {
+        return [.x, PieceType.hline5, .vline5, .sline4, .sline4_1, .c1, .c2, .c3, .c4, .l1, .l2, .l3, .l4, .l5, .l6, .l7, .l8, .t1, .t2, .t3, .t4, .f1, .f2, .f3, .f4].map{$0.piece}
+    }()
+    
+    var health: Float {
+        var health = 0
+        let pieceCount = Woodoku.difficultPieces.count
+        var list = [Woodoku.PieceType.x.piece, Woodoku.PieceType.x.piece, Woodoku.PieceType.x.piece]
+        for i in 0..<pieceCount - 2 {
+            list[0] = Woodoku.difficultPieces[i]
+            var j = i
+            while j < pieceCount {
+                list[1] = Woodoku.difficultPieces[j]
+                var k = j
+                while k < pieceCount {
+                    list[2] = Woodoku.difficultPieces[k]
+                    if let _ = self.place(pieces: list, checkFeasibility: true) {
+                        health += 1
+                    }
+                    k += 1
+                }
+                j += 1
+            }
+        }
+        return Float(health) /  20825
+    }
+    
+    var totalConnections: Int {
+        var count = 0
+        for x in 0...8 {
+            for y in 0...8 where board[y][x] {
+                if x > 0 && board[y][x - 1] {count += 1}
+                if x < 8 && board[y][x + 1] {count += 1}
+                if y > 0 && board[y - 1][x] {count += 1}
+                if y < 8 && board[y + 1][x] {count += 1}
+            }
+        }
+        
+        return count
     }
     
     private func occupy(x: Int, y: Int, iac: Int, area: inout [[Int]]) {
         area[y][x] = iac
         if y > 0 {
-            if !board[y - 1][x] && area[y - 1][x] == 0 {
+            if board[y - 1][x] && area[y - 1][x] == 0 {
                 occupy(x: x, y: y - 1, iac: iac, area: &area)
             }
         }
         if y < 8 {
-            if !board[y + 1][x] && area[y + 1][x] == 0 {
+            if board[y + 1][x] && area[y + 1][x] == 0 {
                 occupy(x: x, y: y + 1, iac: iac, area: &area)
             }
         }
         if x > 0 {
-            if !board[y][x - 1] && area[y][x - 1] == 0 {
+            if board[y][x - 1] && area[y][x - 1] == 0 {
                 occupy(x: x - 1, y: y, iac: iac, area: &area)
             }
         }
         if x < 8 {
-            if !board[y][x + 1] && area[y][x + 1] == 0 {
+            if board[y][x + 1] && area[y][x + 1] == 0 {
                 occupy(x: x + 1, y: y, iac: iac, area: &area)
             }
         }
@@ -247,11 +248,24 @@ struct Woodoku {
         return newGame
     }
     
-    func place(pieces: [Piece]) -> [PieceWithPosition]? {
+    private static var pointListInBoard: [Point2d] = {
+        var list = [Point2d]()
+        for x in 0...8 {
+            for y in 0...8 {
+                list.append(Point2d(x: x, y: y))
+            }
+        }
+        return list
+    }()
+    
+    func place(pieces: [Piece], checkFeasibility: Bool = false) -> [PieceWithPosition]? {
         var history = [] as Set<String>
-        var bestPiecePositions: [PieceWithPosition]?
-        var bestScore = 0 as Float
+        var bestSolutions: [([PieceWithPosition], Woodoku)]?
+        var bestScore = 0
         for indexes in [[0,1,2], [0,2,1], [1,0,2], [1,2,0], [2,0,1], [2,1,0]] {
+            for p0 in Woodoku.pointListInBoard where p0.y + pieces[indexes[0]].yLength <= 9 && p0.x + pieces[indexes[0]].xLength <= 9 {
+                
+            }
             for y0 in 0...8 where y0 + pieces[indexes[0]].yLength <= 9 {
                 for x0 in 0...8 where x0 + pieces[indexes[0]].xLength <= 9 {
                     if let ugame0 = place(piece: pieces[indexes[0]], at: Point2d(x: x0, y: y0)) {
@@ -275,6 +289,9 @@ struct Woodoku {
                                     for y2 in 0...8 where y2 + pieces[indexes[2]].yLength <= 9 {
                                         for x2 in 0...8 where x2 + pieces[indexes[2]].xLength <= 9 {
                                             if let ugame2 = game1.place(piece: pieces[indexes[2]], at: Point2d(x: x2, y: y2)) {
+                                                if checkFeasibility {
+                                                    return []
+                                                }
                                                 var game2 = ugame2
                                                 let dirty2 = game2.trim()
                                                 let fingerPrint2 = fingerPrint1 + ":" + pieces[indexes[2]].input + (dirty2 ? "d" : "s") + "\(x2),\(y2)"
@@ -282,14 +299,28 @@ struct Woodoku {
                                                     continue
                                                 }
                                                 history.insert(fingerPrint2)
-                                                let score = game2.score
+                                                let score = game2.basicScore
                                                 if score > bestScore {
                                                     bestScore = score
-                                                    bestPiecePositions = [
+                                                    bestSolutions = [([
                                                         PieceWithPosition(piece: pieces[indexes[0]], pos: Point2d(x: x0, y: y0)),
                                                         PieceWithPosition(piece: pieces[indexes[1]], pos: Point2d(x: x1, y: y1)),
                                                         PieceWithPosition(piece: pieces[indexes[2]], pos: Point2d(x: x2, y: y2))
-                                                    ]
+                                                    ], game2)]
+                                                } else if score == bestScore {
+                                                    if let list = bestSolutions {
+                                                        bestSolutions = list + [([
+                                                            PieceWithPosition(piece: pieces[indexes[0]], pos: Point2d(x: x0, y: y0)),
+                                                            PieceWithPosition(piece: pieces[indexes[1]], pos: Point2d(x: x1, y: y1)),
+                                                            PieceWithPosition(piece: pieces[indexes[2]], pos: Point2d(x: x2, y: y2))
+                                                        ], game2)]
+                                                    } else {
+                                                        bestSolutions = [([
+                                                            PieceWithPosition(piece: pieces[indexes[0]], pos: Point2d(x: x0, y: y0)),
+                                                            PieceWithPosition(piece: pieces[indexes[1]], pos: Point2d(x: x1, y: y1)),
+                                                            PieceWithPosition(piece: pieces[indexes[2]], pos: Point2d(x: x2, y: y2))
+                                                        ], game2)]
+                                                    }
                                                 }
                                             }
                                         }
@@ -302,7 +333,40 @@ struct Woodoku {
             }
         }
         
-        return bestPiecePositions
+        if let solutions = bestSolutions {
+            if solutions.count == 1 {
+                return solutions.first?.0
+            }
+            
+            if solutions.count > 99 {
+                print("check connections")
+                var connections = 0
+                var bestIndex: Int?
+                for index in 0..<solutions.count {
+                    let c = solutions[index].1.totalConnections
+                    if c > connections {
+                        connections = c
+                        bestIndex = index
+                    }
+                }
+                return solutions[bestIndex!].0
+            }
+            
+            print("check health")
+            var maxHealth = 0 as Float
+            var bestIndex: Int?
+            for index in 0..<solutions.count {
+                let health = solutions[index].1.health
+                if health > maxHealth {
+                    maxHealth = health
+                    bestIndex = index
+                }
+            }
+            
+            return solutions[bestIndex!].0
+        }
+        
+        return nil
     }
 }
 

@@ -286,7 +286,7 @@ class MySKScene: SKScene {
     private let smallRadius = 5 as Double
     private var isCalculating = false
     private var selectedPieces: [Woodoku.Piece] = []
-    let labelNode = SKLabelNode(text: "Calculating...")
+    let labelNode = SKLabelNode(text: "Start")
     
     override init(size: CGSize) {
         if let list = UserDefaults.standard.object(forKey: "Woodoku") as? [[Bool]] {
@@ -297,7 +297,7 @@ class MySKScene: SKScene {
         super.init(size: size)
         
         addChild(labelNode)
-        labelNode.alpha = 0
+        labelNode.name = "start"
         labelNode.position = CGPoint(x: Double(1 + 4 * 6) * 2 * smallRadius, y: 9 * radius * 2 + radius)
         scaleMode = .resizeFill
         let board = SKNode()
@@ -403,12 +403,17 @@ class MySKScene: SKScene {
                 }
             } else if name == "clear" {
                 game = Woodoku()
+                saveGame()
                 self.enumerateChildNodes(withName: "//[0-8],[0-8]*") { node, _ in
                     (node as? SKShapeNode)?.fillColor = .clear
                     if let name = node.name, name.hasSuffix("red") {
                         let newName = name[..<name.index(name.startIndex, offsetBy: 3)]
                         node.name = String(newName)
                     }
+                }
+            } else if name == "start" {
+                if selectedPieces.count > 0 {
+                    calculate()
                 }
             }
             return
@@ -489,12 +494,12 @@ class MySKScene: SKScene {
     
     private func calculate() {
         isCalculating = true
-        labelNode.alpha = 1
+        labelNode.text = "Calculating..."
         DispatchQueue.global(qos: .background).async {
             let bestPiecePositions = self.game.place(pieces: self.selectedPieces)
             DispatchQueue.main.async {
                 self.isCalculating = false
-                self.labelNode.alpha = 0
+                self.labelNode.text = "Start"
                 self.selectedPieces.removeAll()
                 if let solutions = bestPiecePositions {
                     GameViewController.showAlert(message: "Solution found")
