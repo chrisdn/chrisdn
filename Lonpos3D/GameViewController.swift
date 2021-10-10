@@ -471,10 +471,20 @@ class MySKScene: SKScene {
         self.removeAllSelectedPieceNodes()
         selectedPieces.removeAll()
         for i in 0...2 {
-            let index = Int.random(in: 0...48)
-            let piece = Woodoku.PieceType.allCases[index].piece
-            score += piece.ballCount
-            addNewSelectedPiece(piece, index: i)
+            let index = Int.random(in: 0...207)
+            let piece = Woodoku.PieceType.allCases.compactMap { type -> Woodoku.Piece? in
+                if let delimiter = type.rawValue.firstIndex(of: "|") {
+                    let str = type.rawValue[type.rawValue.index(after: delimiter)...]
+                    if let dash = str.firstIndex(of: "-"), let min = Int(str[..<dash]), let max = Int(str[str.index(after: dash)...]), min >= 0, max > min, index >= min, index <= max {
+                        return type.piece
+                    }
+                }
+                return nil
+            }.first
+            if let piece = piece {
+                score += piece.ballCount
+                addNewSelectedPiece(piece, index: i)
+            } else {abort()}
         }
         DispatchQueue.global(qos: .background).async {
             let solution = self.game.place(pieces: self.selectedPieces)

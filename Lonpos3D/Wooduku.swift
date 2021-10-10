@@ -9,24 +9,30 @@ import Foundation
 
 struct Woodoku {
     enum PieceType: String, CaseIterable {
-        case hline5 = "55555", vline5 = "5,5,5,5,5", hline4 = "4444", vline4 = "4,4,4,4"
-        case hline3 = "333", vline3 = "3,3,3", hline2 = "22", vline2 = "2,2"
-        case c1 = "333,2 2", c2 = "22,2 ,22", c3 = "2 2,333", c4 = "22, 2,22"
-        case x = ".1.,333,.1."
-        case sline4 = "1,.1,..1,...1", sline4_1 = "...1,..1,.1,1"
-        case sline3 = "1,.1,..1", sline3_1 = "..1,.1,1"
-        case sline2 = "1,.1", sline2_1 = ".1,1"
-        case l1 = "333,1", l2 = "333,..1", l3 = "22,1,1", l4 = "22,.1,.1"
-        case l5 = "..1,333", l6 = "1,333", l7 = "1,1,22", l8 = ".1,.1,22"
-        case s1 = "1,22,.1", s2 = ".22,22", s3 = ".1,22,1", s4 = "22,.22"
-        case tian = "22,22", a1 = "22,1", a2 = "22,.1", a3 = "1,22", a4 = ".1,22"
-        case t1 = "333,.1.,.1.", t2 = "..1,333,..1", t3 = ".1.,.1.,333", t4 = "1,333,1"
-        case st1 = "333,.1", st2 = "1,22,1", st3 = ".1,333", st4 = ".1,22,.1"
-        case f1 = "333,..1,..1", f2 = "333,1,1", f3 = "1,1,333", f4 = "..1,..1,333"
-        case dot = "1"
+        case dot = "1|0-1"
+        
+        case hline2 = "22|2-5", vline2 = "2,2|6-9"
+        case sline2 = "1,.1|10-13", sline2_1 = ".1,1|14-17"
+        
+        case hline3 = "333|18-20", vline3 = "3,3,3|21-23"
+        case sline3 = "1,.1,..1|24-26", sline3_1 = "..1,.1,1|27-29"
+        case a1 = "22,1|30-35", a2 = "22,.1|36-41", a3 = "1,22|42-47", a4 = ".1,22|48-53"
+        
+        case hline4 = "4444|54-58", vline4 = "4,4,4,4|59-63"
+        case sline4 = "1,.1,..1,...1|64-65", sline4_1 = "...1,..1,.1,1|66-67"
+        case l1 = "333,1|68-69", l2 = "333,..1|70-71", l3 = "22,1,1|72-73", l4 = "22,.1,.1|74-75", l5 = "..1,333|76-77", l6 = "1,333|78-79", l7 = "1,1,22|80-81", l8 = ".1,.1,22|82-83"
+        case tian = "22,22|84-95"
+        case st1 = "333,.1|96-99", st2 = "1,22,1|100-103", st3 = ".1,333|104-107", st4 = ".1,22,.1|108-111"
+        case s1 = "1,22,.1|112-115", s2 = ".22,22|116-119", s3 = ".1,22,1|120-123", s4 = "22,.22|124-127"
+        
+        case hline5 = "55555|128-135", vline5 = "5,5,5,5,5|136-143"
+        case t1 = "333,.1.,.1.|144-147", t2 = "..1,333,..1|148-151", t3 = ".1.,.1.,333|152-155", t4 = "1,333,1|156-159"
+        case c1 = "333,2 2|160-162", c2 = "22,2 ,22|163-165", c3 = "2 2,333|166-168", c4 = "22, 2,22|169-171"
+        case x = ".1.,333,.1.|172-183"
+        case f1 = "333,..1,..1|184-189", f2 = "333,1,1|190-195", f3 = "1,1,333|196-201", f4 = "..1,..1,333|202-207"
         
         var piece: Piece {
-            return Piece(string: rawValue)
+            return Piece(rawValue)
         }
     }
     struct Piece: Hashable {
@@ -35,7 +41,9 @@ struct Woodoku {
         var yLength = 0
         var ballCount = 0
         
-        init(string: String) {
+        init(_ str: String) {
+            guard let delimiter = str.firstIndex(of: "|") else {abort()}
+            let string = str[..<delimiter]
             var list = [[Bool]]()
             for strLine in string.split(separator: ",", omittingEmptySubsequences: false) {
                 var boolLine = [Bool]()
@@ -301,7 +309,6 @@ struct Woodoku {
         var bestSolutions: [([PieceWithPosition], Woodoku)]?
         var bestScore = 0
         for indexes in Woodoku.combinationIndexes[pieces.count] {
-            print(indexes)
             let piece0 = pieces[indexes[0]]
             for p0 in Woodoku.pointListInBoard where p0.y + piece0.yLength <= 9 && p0.x + piece0.xLength <= 9 {
                 if let ugame0 = place(piece: piece0, at: p0) {
