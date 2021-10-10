@@ -411,6 +411,7 @@ class MySKScene: SKScene {
                 }
             } else if name == "clear" {
                 game = Woodoku()
+                score = 0
                 saveGame()
                 self.enumerateChildNodes(withName: "//[0-8],[0-8]*") { node, _ in
                     (node as? SKShapeNode)?.fillColor = .clear
@@ -461,18 +462,18 @@ class MySKScene: SKScene {
         selectedPieces.append(piece)
     }
     
-    private var score = 0
+    private var score = 0 {
+        didSet {
+            self.scoreNode.text = "\(self.score)"
+        }
+    }
     private func autoPlayOnce() {
         self.removeAllSelectedPieceNodes()
         selectedPieces.removeAll()
         for i in 0...2 {
             let index = Int.random(in: 0...48)
             let piece = Woodoku.PieceType.allCases[index].piece
-            for line in piece.pattern {
-                for b in line where b {
-                    score += 1
-                }
-            }
+            score += piece.ballCount
             addNewSelectedPiece(piece, index: i)
         }
         DispatchQueue.global(qos: .background).async {
@@ -482,7 +483,6 @@ class MySKScene: SKScene {
                     self.game = newGame
                     self.updateBoard()
                     self.score += solution.2
-                    self.scoreNode.text = "\(self.score)"
                     self.autoPlayOnce()
                 } else {
                     self.selectedPieces.removeAll()
@@ -566,11 +566,15 @@ class MySKScene: SKScene {
             DispatchQueue.main.async {
                 self.isCalculating = false
                 self.startButtonNode.text = "Start"
+                let totalBallCount = self.selectedPieces.reduce(0) { total, piece in
+                    total + piece.ballCount
+                }
                 self.selectedPieces.removeAll()
                 let solution = bestPiecePositions
                 if let pieceWithPosition = solution.0 {
                     GameViewController.showAlert(message: "Solution found", information: "\(solution.2)")
                     self.showSteps(bestPiecePositions: pieceWithPosition, colorValue: 0.2)
+                    self.score += solution.2 + totalBallCount
                 } else {
                     GameViewController.showAlert(message: "Solution not found", information: "\(solution.2)")
                     self.selectedPieces.removeAll()

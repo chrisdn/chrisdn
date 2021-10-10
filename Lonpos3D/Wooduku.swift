@@ -33,13 +33,16 @@ struct Woodoku {
         let pattern: [[Bool]]
         var xLength = 0
         var yLength = 0
+        var ballCount = 0
         
         init(string: String) {
             var list = [[Bool]]()
             for strLine in string.split(separator: ",", omittingEmptySubsequences: false) {
                 var boolLine = [Bool]()
                 for char in Array(strLine) {
-                    boolLine.append(char != " " && char != ".")
+                    let b = char != " " && char != "."
+                    boolLine.append(b)
+                    if b {ballCount += 1}
                 }
                 list.append(boolLine)
                 xLength = max(xLength, boolLine.count)
@@ -94,34 +97,6 @@ struct Woodoku {
             list.append(boolLine)
         }
         board = list
-    }
-    
-    private static var difficultPieces: [Piece] = {
-        return [.x, PieceType.hline5, .vline5, .sline4, .sline4_1, .c1, .c2, .c3, .c4, .l1, .l2, .l3, .l4, .l5, .l6, .l7, .l8, .t1, .t2, .t3, .t4, .f1, .f2, .f3, .f4].map{$0.piece}
-    }()
-    
-    private var health: Float {
-        var health = 0
-        let pieceCount = Woodoku.difficultPieces.count
-        var list = [Woodoku.PieceType.x.piece, Woodoku.PieceType.x.piece, Woodoku.PieceType.x.piece]
-        for i in 0..<pieceCount - 2 {
-            list[0] = Woodoku.difficultPieces[i]
-            var j = i
-            while j < pieceCount {
-                list[1] = Woodoku.difficultPieces[j]
-                var k = j
-                while k < pieceCount {
-                    list[2] = Woodoku.difficultPieces[k]
-                    let solution = self.place(pieces: list, checkFeasibility: true)
-                    if let _ = solution.0 {
-                        health += 1
-                    }
-                    k += 1
-                }
-                j += 1
-            }
-        }
-        return Float(health) /  20825
     }
     
     private var weight: Double {
@@ -321,6 +296,7 @@ struct Woodoku {
                 }
             }
         }
+        
         var history = [] as Set<Int>
         var bestSolutions: [([PieceWithPosition], Woodoku)]?
         var bestScore = 0
