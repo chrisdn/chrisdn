@@ -166,8 +166,11 @@ class GameViewController: NSViewController {
         UserDefaults.standard.synchronize()
     }
     
-    fileprivate static func showAlert(message: String) {
+    fileprivate static func showAlert(message: String, information: String = "") {
         let alert = NSAlert()
+        if !information.isEmpty {
+            alert.informativeText = information
+        }
         alert.messageText = message
         alert.alertStyle = .informational
         alert.addButton(withTitle: "OK")
@@ -286,7 +289,9 @@ class MySKScene: SKScene {
     private let smallRadius = 5 as Double
     private var isCalculating = false
     private var selectedPieces: [Woodoku.Piece] = []
-    let labelNode = SKLabelNode(text: "Start")
+    let startButtonNode = SKLabelNode(text: "Start")
+    let scoreNode = SKLabelNode(text: "0")
+    var pieceSelectionMap = [Woodoku.Piece: Int]()
     
     override init(size: CGSize) {
         if let list = UserDefaults.standard.object(forKey: "Woodoku") as? [[Bool]] {
@@ -296,9 +301,12 @@ class MySKScene: SKScene {
         }
         super.init(size: size)
         
-        addChild(labelNode)
-        labelNode.name = "start"
-        labelNode.position = CGPoint(x: Double(1 + 4 * 6) * 2 * smallRadius, y: 9 * radius * 2 + radius)
+        addChild(startButtonNode)
+        startButtonNode.name = "Start"
+        startButtonNode.position = CGPoint(x: Double(1 + 4 * 6) * 2 * smallRadius, y: 9 * radius * 2 + radius)
+        addChild(scoreNode)
+        scoreNode.name = "score"
+        scoreNode.position = CGPoint(x: size.width / 2, y: 10 * radius * 2 + radius)
         scaleMode = .resizeFill
         let board = SKNode()
         addChild(board)
@@ -384,15 +392,15 @@ class MySKScene: SKScene {
                 let rawValue = name[name.index(name.startIndex, offsetBy: 6)...]
                 if let pieceType = Woodoku.PieceType(rawValue: String(rawValue)) {
                     let piece = pieceType.piece
-                    let node = createNode(for: piece)
-                    node.name = "selected\(index)"
-                    node.position = CGPoint(x: Double(1 + index * 6) * 2 * smallRadius, y: 9 * radius * 2 + radius)
-                    addChild(node)
-                    selectedPieces.append(piece)
+                    addNewSelectedPiece(piece, index: index)
                 }
                 
                 if selectedPieces.count == 3 {
-                    calculate()
+                    isCalculating = true
+                    startButtonNode.text = "Calculating..."
+                    Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
+                        self.calculate()
+                    }
                 }
             } else if name.hasPrefix("selected") {
                 //deselect a previously selected node
@@ -411,9 +419,18 @@ class MySKScene: SKScene {
                         node.name = String(newName)
                     }
                 }
-            } else if name == "start" {
+            } else if name.lowercased() == "start" {
                 if selectedPieces.count > 0 {
-                    calculate()
+                    isCalculating = true
+                    startButtonNode.text = "Calculating..."
+                    Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
+                        self.calculate()
+                    }
+                } else {
+                    //do auto play
+                    score = 0
+                    autoPlayOnce()
+                    isCalculating = true
                 }
             }
             return
@@ -436,6 +453,47 @@ class MySKScene: SKScene {
         saveGame()
     }
     
+    private func addNewSelectedPiece(_ piece: Woodoku.Piece, index: Int) {
+        let node = createNode(for: piece)
+        node.name = "selected\(index)"
+        node.position = CGPoint(x: Double(1 + index * 6) * 2 * smallRadius, y: 9 * radius * 2 + radius)
+        addChild(node)
+        selectedPieces.append(piece)
+    }
+    
+    private var score = 0
+    private func autoPlayOnce() {
+        self.removeAllSelectedPieceNodes()
+        selectedPieces.removeAll()
+        for i in 0...2 {
+            let index = Int.random(in: 0...48)
+            let piece = Woodoku.PieceType.allCases[index].piece
+            for line in piece.pattern {
+                for b in line where b {
+                    score += 1
+                }
+            }
+            addNewSelectedPiece(piece, index: i)
+        }
+        DispatchQueue.global(qos: .background).async {
+            let solution = self.game.place(pieces: self.selectedPieces)
+            DispatchQueue.main.async {
+                if let newGame = solution.1 {
+                    self.game = newGame
+                    self.updateBoard()
+                    self.score += solution.2
+                    self.scoreNode.text = "\(self.score)"
+                    self.autoPlayOnce()
+                } else {
+                    self.selectedPieces.removeAll()
+                    self.removeAllSelectedPieceNodes()
+                    self.startButtonNode.text = "Start"
+                    self.isCalculating = false
+                }
+            }
+        }
+    }
+    
     private func showSteps(bestPiecePositions: [Woodoku.PieceWithPosition], colorValue: CGFloat) {
         guard let piecePosition = bestPiecePositions.first else {
             //remove all selected pieces
@@ -454,9 +512,9 @@ class MySKScene: SKScene {
                 node.fillColor = NSColor(hue: colorValue, saturation: 1, brightness: 1, alpha: 1)
             }
         }
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
+        Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
             self.showTrimmedBoardWithAnimation(pieceWithPlace: piecePosition)
-            Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
+            Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
                 GameViewController.showAlert(message: "Next")
                 self.showSteps(bestPiecePositions: Array(bestPiecePositions.dropFirst()), colorValue: 0.2 + colorValue)
             }
@@ -487,25 +545,34 @@ class MySKScene: SKScene {
                 }
             }
         }
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { _ in
+        Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
             self.updateBoard()
         }
     }
     
     private func calculate() {
-        isCalculating = true
-        labelNode.text = "Calculating..."
+//        for piece in selectedPieces {
+//            if let count = pieceSelectionMap[piece] {
+//                pieceSelectionMap[piece] = count + 1
+//            } else {
+//                pieceSelectionMap[piece] = 1
+//            }
+//        }
+//        for (key, value) in pieceSelectionMap.sorted(by: {$0.1 > $1.1}) {
+//            print(key, value)
+//        }
         DispatchQueue.global(qos: .background).async {
             let bestPiecePositions = self.game.place(pieces: self.selectedPieces)
             DispatchQueue.main.async {
                 self.isCalculating = false
-                self.labelNode.text = "Start"
+                self.startButtonNode.text = "Start"
                 self.selectedPieces.removeAll()
-                if let solutions = bestPiecePositions {
-                    GameViewController.showAlert(message: "Solution found")
-                    self.showSteps(bestPiecePositions: solutions, colorValue: 0.2)
+                let solution = bestPiecePositions
+                if let pieceWithPosition = solution.0 {
+                    GameViewController.showAlert(message: "Solution found", information: "\(solution.2)")
+                    self.showSteps(bestPiecePositions: pieceWithPosition, colorValue: 0.2)
                 } else {
-                    GameViewController.showAlert(message: "Solution not found")
+                    GameViewController.showAlert(message: "Solution not found", information: "\(solution.2)")
                     self.selectedPieces.removeAll()
                     self.removeAllSelectedPieceNodes()
                 }
@@ -517,6 +584,12 @@ class MySKScene: SKScene {
         self.enumerateChildNodes(withName: "selected[0-2]") { node, _ in
             node.removeFromParent()
         }
+    }
+    
+    override func didChangeSize(_ oldSize: CGSize) {
+        var pos = scoreNode.position
+        pos.x = size.width / 2
+        scoreNode.position = pos
     }
 }
 

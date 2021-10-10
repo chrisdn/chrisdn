@@ -41,6 +41,12 @@ struct Point2d: Hashable {
     }
 }
 
+extension Point2d: CustomStringConvertible {
+    var description: String {
+        "(\(x),\(y))"
+    }
+}
+
 struct Game2d: IGame {
     var space = Array(repeating: Character(" "), count: 55)
     var usePieceIndexes = IndexSet()
